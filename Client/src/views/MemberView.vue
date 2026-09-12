@@ -1,0 +1,470 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Select from 'primevue/select';
+import { useToast } from 'primevue/usetoast';
+import { roleBadgeFullClass, roleLabel } from '@/utils/roleBadge';
+import { orgApi } from '@/api/organizations';
+import {
+  workspaceApi,
+  type WorkspaceDto,
+  type WorkspaceMemberDto,
+  type WorkspaceRoleDto,
+} from '@/api/workspaces';
+import { useApiErrorHandler } from '@/api/errorToast';
+import { useAuthStore } from '@/stores/auth';
+import { useOrganizationStore } from '@/stores/organization';
+import LoadingSkeleton from '@/components/feedback/LoadingSkeleton.vue';
+
+const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+const auth = useAuthStore();
+const orgStore = useOrganizationStore();
+const { notify } = useApiErrorHandler();
+
+const loading = ref(true);
+const savingProfile = ref(false);
+const savingRole = ref(false);
+const removing = ref(false);
+const archiving = ref(false);
+const workspaceLoading = ref(false);
+const workspaceActionId = ref<number | null>(null);
+
+const workspaces = ref<WorkspaceDto[]>([]);
+const workspaceMembers = ref<Record<number, WorkspaceMemberDto[]>>({});
+const workspaceRoles = ref<Record<number, WorkspaceRoleDto[]>>({});
+const selectedWorkspaceRole = ref<Record<number, number | null>>({});
+
+const editFirstName = ref('');
+const editLastName = ref('');
+const selectedOrgRoleId = ref<number | null>(null);
+
+const ASSIGN_ORG_ROLES_PERM = 'assign_org_roles';
+const REMOVE_ORG_MEMBERS_PERM = 'remove_org_members';
+const EDIT_OTHER_PROFILE_PERM = 'edit_other_org_users_profile';
+const DELETE_ORG_USERS_PERM = 'delete_org_users';
+const MANAGE_ORG_WORKSPACE_MEMBERS_PERM = 'manage_org_workspace_members';
+
+function hasPermission(permission: string): boolean {
+  const roleName = orgStore.currentOrg?.userRole;
+  if (!roleName) return false;
+  const role = orgStore.roles.find((r) => r.name === roleName);
+  return role?.permissions.some((p) => p.name === permission) ?? false;
+}
+
+const canEditOtherProfiles = computed(() => hasPermission(EDIT_OTHER_PROFILE_PERM));
+const canAssignOrgRoles = computed(() => hasPermission(ASSIGN_ORG_ROLES_PERM));
+const canRemoveOrgMembers = computed(() => hasPermission(REMOVE_ORG_MEMBERS_PERM));
+const canDeleteOrgUsers = computed(() => hasPermission(DELETE_ORG_USERS_PERM));
+const canManageWorkspaceAccess = computed(() =>
+  hasPermission(MANAGE_ORG_WORKSPACE_MEMBERS_PERM),
+);
+
+const memberUserId = computed(() => Number(route.params.memberUserId));
+const member = computed(() =>
+  orgStore.members.find((m) => m.userId === memberUserId.value) ?? null,
+);
+const isSelf = computed(() => member.value?.userId === auth.user?.id);
+
+const orgRoleOptions = computed(() =>
+  orgStore.roles
+    .filter((r) => r.name === 'org_admin' || r.name === 'org_member')
+    .slice()
+    .sort((a, b) => a.priority - b.priority)
+    .map((r) => ({
+      label: r.displayName,
+      value: r.id,
+      name: r.name,
+    })),
+);
+
+function roleIdByName(roleName: string): number | null {
+  return orgStore.roles.find((r) => r.name === roleName)?.id ?? null;
+}
+
+function emailDomain(email: string | null | undefined): string {
+  if (!email) return '';
+  const idx = email.lastIndexOf('@');
+  if (idx < 0 || idx === email.length - 1) return '';
+  return email.slice(idx + 1).trim().toLowerCase();
+}
+
+const canArchiveMember = computed(() => {
+  if (!member.value || !canDeleteOrgUsers.value || isSelf.value) return false;
+  return emailDomain(member.value.email) === emailDomain(auth.user?.email);
+});
+
+function workspaceMemberFor(wsId: number): WorkspaceMemberDto | null {
+  const members = workspaceMembers.value[wsId] ?? [];
+  return members.find((m) => m.userId === memberUserId.value) ?? null;
+}
+
+function workspaceRoleOptions(wsId: number) {
+  return (workspaceRoles.value[wsId] ?? []).map((r) => ({
+    label: r.displayName,
+    value: r.id,
+  }));
+}
+
+function selectedWorkspaceRoleId(wsId: number): number | null {
+  const current = selectedWorkspaceRole.value[wsId];
+  if (current) return current;
+  const defaultRole = (workspaceRoles.value[wsId] ?? []).find(
+    (r) => r.name === 'ws_member',
+  );
+  return defaultRole?.id ?? null;
+}
+
+async function loadWorkspaceAccess() {
+  if (!orgStore.currentOrgId || !canManageWorkspaceAccess.value) return;
+  workspaceLoading.value = true;
+  try {
+    workspaces.value = await workspaceApi.list(orgStore.currentOrgId);
+    await Promise.all(
+      workspaces.value.map(async (ws) => {
+        const [members, roles] = await Promise.all([
+          workspaceApi.listMembers(ws.id),
+          workspaceApi.listRoles(ws.id),
+        ]);
+        workspaceMembers.value[ws.id] = members;
+        workspaceRoles.value[ws.id] = roles;
+        const current = members.find((m) => m.userId === memberUserId.value);
+        selectedWorkspaceRole.value[ws.id] =
+          current
+            ? roles.find((r) => r.name === current.roleName)?.id ?? null
+            : roles.find((r) => r.name === 'ws_member')?.id ?? null;
+      }),
+    );
+  } catch (err) {
+    notify(err, { fallback: t('member.loadWsAccessError') });
+  } finally {
+    workspaceLoading.value = false;
+  }
+}
+
+async function handleSaveProfile() {
+  if (!member.value || !orgStore.currentOrgId) return;
+  savingProfile.value = true;
+  try {
+    await orgApi.updateOrgUserProfile(orgStore.currentOrgId, member.value.userId, {
+      firstName: editFirstName.value.trim(),
+      lastName: editLastName.value.trim(),
+    });
+    await orgStore.fetchMembers();
+    toast.add({
+      severity: 'success',
+      summary: t('member.profileUpdated'),
+      detail: t('member.profileUpdatedDetail'),
+      life: 4000,
+    });
+  } catch (err) {
+    notify(err, { fallback: t('member.profileUpdateError') });
+  } finally {
+    savingProfile.value = false;
+  }
+}
+
+async function handleSaveOrgRole() {
+  if (!member.value || !selectedOrgRoleId.value || member.value.roleName === 'org_owner') {
+    return;
+  }
+  savingRole.value = true;
+  try {
+    await orgStore.changeMemberRole(member.value.userId, selectedOrgRoleId.value);
+    toast.add({
+      severity: 'success',
+      summary: t('member.roleUpdated'),
+      detail: t('member.orgRoleUpdatedDetail'),
+      life: 4000,
+    });
+  } catch (err) {
+    notify(err, { fallback: t('member.orgRoleUpdateError') });
+  } finally {
+    savingRole.value = false;
+  }
+}
+
+async function handleRemoveFromOrg() {
+  if (!member.value) return;
+  if (!window.confirm(t('member.confirmRemove'))) return;
+  removing.value = true;
+  try {
+    await orgStore.removeMember(member.value.userId);
+    toast.add({
+      severity: 'success',
+      summary: t('member.memberRemoved'),
+      detail: t('member.memberRemovedDetail'),
+      life: 4000,
+    });
+    await router.push({ name: 'members' });
+  } catch (err) {
+    notify(err, { fallback: t('member.removeError') });
+  } finally {
+    removing.value = false;
+  }
+}
+
+async function handleArchiveAccount() {
+  if (!member.value || !orgStore.currentOrgId) return;
+  if (!window.confirm(t('member.confirmArchive'))) {
+    return;
+  }
+  archiving.value = true;
+  try {
+    await orgStore.deleteOrgUser(member.value.userId);
+    toast.add({
+      severity: 'success',
+      summary: t('member.accountArchived'),
+      detail: t('member.accountArchivedDetail'),
+      life: 4000,
+    });
+    await router.push({ name: 'members' });
+  } catch (err) {
+    notify(err, { fallback: t('member.archiveError') });
+  } finally {
+    archiving.value = false;
+  }
+}
+
+async function handleGrantWorkspaceAccess(wsId: number) {
+  if (!member.value) return;
+  const roleId = selectedWorkspaceRoleId(wsId);
+  if (!roleId) {
+    notify(new Error(t('member.selectRoleFirst')), { fallback: t('member.selectRole') });
+    return;
+  }
+  workspaceActionId.value = wsId;
+  try {
+    await workspaceApi.addMember(wsId, member.value.userId, roleId);
+    workspaceMembers.value[wsId] = await workspaceApi.listMembers(wsId);
+    toast.add({
+      severity: 'success',
+      summary: t('member.accessGranted'),
+      detail: t('member.accessGrantedDetail'),
+      life: 3000,
+    });
+  } catch (err) {
+    notify(err, { fallback: t('member.grantError') });
+  } finally {
+    workspaceActionId.value = null;
+  }
+}
+
+async function handleChangeWorkspaceRole(wsId: number) {
+  if (!member.value) return;
+  const roleId = selectedWorkspaceRoleId(wsId);
+  if (!roleId) return;
+  workspaceActionId.value = wsId;
+  try {
+    await workspaceApi.changeMemberRole(wsId, member.value.userId, roleId);
+    workspaceMembers.value[wsId] = await workspaceApi.listMembers(wsId);
+    toast.add({
+      severity: 'success',
+      summary: t('member.roleUpdated'),
+      detail: t('member.wsRoleChangedDetail'),
+      life: 3000,
+    });
+  } catch (err) {
+    notify(err, { fallback: t('member.wsRoleChangeError') });
+  } finally {
+    workspaceActionId.value = null;
+  }
+}
+
+async function handleRemoveWorkspaceAccess(wsId: number) {
+  if (!member.value) return;
+  workspaceActionId.value = wsId;
+  try {
+    await workspaceApi.removeMember(wsId, member.value.userId);
+    workspaceMembers.value[wsId] = await workspaceApi.listMembers(wsId);
+    toast.add({
+      severity: 'success',
+      summary: t('member.accessRemoved'),
+      detail: t('member.accessRemovedDetail'),
+      life: 3000,
+    });
+  } catch (err) {
+    notify(err, { fallback: t('member.removeAccessError') });
+  } finally {
+    workspaceActionId.value = null;
+  }
+}
+
+onMounted(async () => {
+  try {
+    await Promise.all([orgStore.fetchMembers(), orgStore.fetchRoles()]);
+    if (!member.value) {
+      await router.replace({ name: 'members' });
+      return;
+    }
+    editFirstName.value = member.value.firstName;
+    editLastName.value = member.value.lastName;
+    selectedOrgRoleId.value = roleIdByName(member.value.roleName);
+    await loadWorkspaceAccess();
+  } finally {
+    loading.value = false;
+  }
+});
+</script>
+
+<template>
+  <section class="max-w-5xl">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <Button
+          icon="pi pi-arrow-left"
+          :label="t('member.back')"
+          text
+          class="!px-0 mb-2"
+          @click="router.push({ name: 'members' })"
+        />
+        <h1 class="text-2xl font-bold text-ink-900">{{ t('member.title') }}</h1>
+        <p v-if="member" class="mt-3 text-sm text-ink-500">
+          <span class="font-semibold text-brand-600">
+            {{ member.firstName }} {{ member.lastName }}
+          </span>
+          · {{ member.email }}
+        </p>
+      </div>
+      <span v-if="member" :class="roleBadgeFullClass(member.roleName)">
+        {{ roleLabel(member.roleName, member.roleDisplayName) }}
+      </span>
+    </div>
+
+    <LoadingSkeleton v-if="loading" variant="detail" :rows="5" :label="t('common.loading')" />
+
+    <div v-else-if="!member" class="rounded-xl border border-line bg-white p-6 text-ink-600">
+      {{ t('member.notFound') }}
+    </div>
+
+    <div v-else class="space-y-6">
+      <div class="rounded-xl border border-line bg-white p-6">
+        <h2 class="text-lg font-semibold text-ink-900 mb-4">{{ t('member.profile') }}</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-medium text-ink-600">{{ t('members.firstName') }}</label>
+            <InputText v-model="editFirstName" maxlength="100" :disabled="!canEditOtherProfiles || isSelf" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-medium text-ink-600">{{ t('members.lastName') }}</label>
+            <InputText v-model="editLastName" maxlength="100" :disabled="!canEditOtherProfiles || isSelf" />
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <Button
+            :label="t('member.saveProfile')"
+            :loading="savingProfile"
+            :disabled="!canEditOtherProfiles || isSelf || !editFirstName.trim() || !editLastName.trim()"
+            @click="handleSaveProfile"
+          />
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-line bg-white p-6">
+        <h2 class="text-lg font-semibold text-ink-900 mb-4">{{ t('member.orgAccess') }}</h2>
+        <div class="grid grid-cols-[1fr_auto] items-end gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-medium text-ink-600">{{ t('members.role') }}</label>
+            <Select
+              v-model="selectedOrgRoleId"
+              :options="orgRoleOptions"
+              option-label="label"
+              option-value="value"
+              :disabled="!canAssignOrgRoles || member.roleName === 'org_owner' || isSelf"
+            />
+          </div>
+          <Button
+            :label="t('member.saveRole')"
+            :loading="savingRole"
+            :disabled="!canAssignOrgRoles || member.roleName === 'org_owner' || isSelf || !selectedOrgRoleId"
+            @click="handleSaveOrgRole"
+          />
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-line bg-white p-6">
+        <h2 class="text-lg font-semibold text-ink-900 mb-4">{{ t('member.dangerZone') }}</h2>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            :label="t('member.removeFromOrg')"
+            severity="warning"
+            :loading="removing"
+            :disabled="!canRemoveOrgMembers || member.roleName === 'org_owner' || isSelf"
+            @click="handleRemoveFromOrg"
+          />
+          <Button
+            :label="t('member.archiveAccount')"
+            severity="danger"
+            :loading="archiving"
+            :disabled="!canArchiveMember"
+            @click="handleArchiveAccount"
+          />
+        </div>
+        <p class="mt-2 text-xs text-ink-500">
+          {{ t('member.archiveHint') }}
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-line bg-white p-6">
+        <h2 class="text-lg font-semibold text-ink-900 mb-4">{{ t('member.workspaceAccess') }}</h2>
+        <div v-if="!canManageWorkspaceAccess" class="text-sm text-ink-500">
+          {{ t('member.needWsPermission') }}
+        </div>
+        <LoadingSkeleton
+          v-else-if="workspaceLoading"
+          variant="list"
+          :rows="3"
+          :label="t('common.loading')"
+        />
+        <div v-else class="space-y-3">
+          <div
+            v-for="ws in workspaces"
+            :key="ws.id"
+            class="border border-line rounded-lg p-3 flex items-center gap-3"
+          >
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-ink-900 truncate">{{ ws.name }}</p>
+              <p class="text-xs text-ink-500">
+                {{ workspaceMemberFor(ws.id) ? t('member.hasAccess') : t('member.noAccess') }}
+              </p>
+            </div>
+            <Select
+              v-model="selectedWorkspaceRole[ws.id]"
+              :options="workspaceRoleOptions(ws.id)"
+              option-label="label"
+              option-value="value"
+              class="!w-48"
+            />
+            <Button
+              v-if="!workspaceMemberFor(ws.id)"
+              :label="t('member.grantAccess')"
+              :loading="workspaceActionId === ws.id"
+              @click="handleGrantWorkspaceAccess(ws.id)"
+            />
+            <Button
+              v-else
+              :label="t('member.saveRole')"
+              severity="secondary"
+              :loading="workspaceActionId === ws.id"
+              @click="handleChangeWorkspaceRole(ws.id)"
+            />
+            <Button
+              v-if="workspaceMemberFor(ws.id)"
+              icon="pi pi-times"
+              severity="danger"
+              text
+              rounded
+              :loading="workspaceActionId === ws.id"
+              @click="handleRemoveWorkspaceAccess(ws.id)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
