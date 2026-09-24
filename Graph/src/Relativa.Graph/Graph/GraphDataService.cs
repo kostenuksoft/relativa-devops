@@ -420,10 +420,10 @@ public sealed class GraphDataService(GraphQueryDbContext db, IMlScoringClient ml
 
     private static bool IsInRiskBucket(double score, string riskLevel) => riskLevel switch
     {
-        "high"   => score < 33.0,
+        "high" => score < 33.0,
         "medium" => score >= 33.0 && score < 67.0,
-        "low"    => score >= 67.0,
-        _        => true
+        "low" => score >= 67.0,
+        _ => true
     };
 
     private static Dictionary<int, string> ClassifyTopBottom(

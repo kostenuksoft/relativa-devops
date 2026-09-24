@@ -1,4 +1,5 @@
 using FluentValidation;
+
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Authentication.Application.Exceptions;
 using Relativa.Authentication.Application.Interfaces;

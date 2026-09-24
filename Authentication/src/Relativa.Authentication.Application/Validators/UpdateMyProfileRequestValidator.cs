@@ -1,4 +1,5 @@
 using FluentValidation;
+
 using Relativa.Authentication.Application.DTOs;
 
 namespace Relativa.Authentication.Application.Validators;

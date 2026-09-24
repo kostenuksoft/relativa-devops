@@ -5,9 +5,7 @@ import time
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from relativa_ml.ml_constants import CLOSURE_FEATURES, CHURN_FEATURES
-
-logger = logging.getLogger(__name__)
+from relativa_ml.ml_constants import CHURN_FEATURES, CLOSURE_FEATURES
 
 from .apps import MlApiConfig
 from .recalculate_service import (
@@ -26,16 +24,13 @@ from .recalculate_service import (
     CLIENT_PROP_TENURE_DAYS,
     CONTRACT_PROP_AMOUNT,
     DAYS_UNTIL_CLOSE_MEDIAN,
-    DEAL_PROP_CLOSURE_SCORE,
     DEAL_PROP_CHURN_SCORE,
+    DEAL_PROP_CLOSURE_SCORE,
     DEAL_PROP_CREATED_AT,
     DEAL_PROP_STATUS,
     DEAL_STATUS_TO_STAGE,
     HIST_CLOSE_RATE_MEDIAN,
     REQUIRED_FEATURE_KEYS,
-    enqueue_recalculation_job,
-    normalize_entity_ids,
-    recompute_deal_analysis,
     _check_deadline,
     _ensure_deal_analysis_entities,
     _load_analysis_state,
@@ -44,7 +39,12 @@ from .recalculate_service import (
     _load_deal_inputs,
     _load_schema_config,
     _upsert_property,
+    enqueue_recalculation_job,
+    normalize_entity_ids,
+    recompute_deal_analysis,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
@@ -61,10 +61,24 @@ def recalculate(request):
     mode = payload.get("mode")
     entity_ids = payload.get("entity_ids")
     if entity_ids is not None and workspace_id is not None and mode == "workspace":
-        return Response({"status": 400, "title": "Bad Request", "detail": "Provide either entity_ids or workspace mode, not both."}, status=400)
+        return Response(
+            {
+                "status": 400,
+                "title": "Bad Request",
+                "detail": "Provide either entity_ids or workspace mode, not both.",
+            },
+            status=400,
+        )
     if workspace_id is not None and mode == "workspace":
         if not isinstance(workspace_id, int) or workspace_id <= 0:
-            return Response({"status": 400, "title": "Bad Request", "detail": "workspace_id must be a positive integer."}, status=400)
+            return Response(
+                {
+                    "status": 400,
+                    "title": "Bad Request",
+                    "detail": "workspace_id must be a positive integer.",
+                },
+                status=400,
+            )
         normalized = []
     else:
         try:
@@ -82,7 +96,14 @@ def recalculate(request):
         )
     except Exception:
         logger.exception("Failed to enqueue recalculation job")
-        return Response({"status": 500, "title": "Internal Server Error", "detail": "Failed to enqueue recalculation job."}, status=500)
+        return Response(
+            {
+                "status": 500,
+                "title": "Internal Server Error",
+                "detail": "Failed to enqueue recalculation job.",
+            },
+            status=500,
+        )
     return Response(
         {
             "status": "accepted",
@@ -192,7 +213,14 @@ def score_batch(request):
         )
     except Exception:
         logger.exception("Unexpected error in score_batch")
-        return Response({"status": 500, "title": "Internal Server Error", "detail": "An unexpected error occurred."}, status=500)
+        return Response(
+            {
+                "status": 500,
+                "title": "Internal Server Error",
+                "detail": "An unexpected error occurred.",
+            },
+            status=500,
+        )
 
 
 # ---------------------------------------------------------------------------

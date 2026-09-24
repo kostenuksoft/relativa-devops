@@ -1,4 +1,5 @@
 using FluentValidation;
+
 using Relativa.Core.Application.DTOs.Workspace;
 
 namespace Relativa.Core.Application.Validators;

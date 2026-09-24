@@ -1,8 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Authentication.Application.Emails;
 using Relativa.Authentication.Application.Exceptions;

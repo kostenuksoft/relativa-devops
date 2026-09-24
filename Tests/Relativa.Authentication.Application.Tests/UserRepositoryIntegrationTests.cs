@@ -45,23 +45,23 @@ public sealed class UserRepositoryIntegrationTests : IAsyncLifetime
     {
         var active = new User
         {
-            Email      = "active@test.com",
-            FirstName  = "Active",
-            LastName   = "User",
-            Password   = "hashed",
+            Email = "active@test.com",
+            FirstName = "Active",
+            LastName = "User",
+            Password = "hashed",
             IsArchived = false,
         };
         var archived = new User
         {
-            Email      = "archived@test.com",
-            FirstName  = "Archived",
-            LastName   = "User",
-            Password   = "hashed",
+            Email = "archived@test.com",
+            FirstName = "Archived",
+            LastName = "User",
+            Password = "hashed",
             IsArchived = true,
         };
         db.Users.AddRange(active, archived);
         await db.SaveChangesAsync();
-        _activeUserId   = active.Id;
+        _activeUserId = active.Id;
         _archivedUserId = archived.Id;
     }
 
@@ -115,10 +115,10 @@ public sealed class UserRepositoryIntegrationTests : IAsyncLifetime
         var repo = new UserRepository(db);
         var user = new User
         {
-            Email      = "new@test.com",
-            FirstName  = "New",
-            LastName   = "User",
-            Password   = "hashed",
+            Email = "new@test.com",
+            FirstName = "New",
+            LastName = "User",
+            Password = "hashed",
             IsArchived = false,
         };
 
@@ -143,13 +143,13 @@ public sealed class UserRepositoryIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task GetByResetToken_ValidToken_ReturnsUser()
     {
-        var token   = "valid-reset-token-123";
+        var token = "valid-reset-token-123";
         var expires = DateTime.UtcNow.AddHours(1);
 
         await using (var db = Db())
         {
             var user = await db.Users.FindAsync(_activeUserId);
-            user!.PasswordResetToken        = token;
+            user!.PasswordResetToken = token;
             user.PasswordResetTokenExpiresAt = expires;
             await db.SaveChangesAsync();
         }
@@ -163,13 +163,13 @@ public sealed class UserRepositoryIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task GetByResetToken_ExpiredToken_ReturnsNull()
     {
-        var token   = "expired-reset-token-456";
+        var token = "expired-reset-token-456";
         var expires = DateTime.UtcNow.AddHours(-1);
 
         await using (var db = Db())
         {
             var user = await db.Users.FindAsync(_activeUserId);
-            user!.PasswordResetToken        = token;
+            user!.PasswordResetToken = token;
             user.PasswordResetTokenExpiresAt = expires;
             await db.SaveChangesAsync();
         }

@@ -27,12 +27,15 @@ dependencies = [
 dev = ["black", "isort", "ruff"]
 
 [tool.black]
-line-length = 88
+line-length = 120
 target-version = ["py311"]
 
 [tool.isort]
 profile = "black"
 
 [tool.ruff]
-line-length = 88
+line-length = 120
+exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "B"]

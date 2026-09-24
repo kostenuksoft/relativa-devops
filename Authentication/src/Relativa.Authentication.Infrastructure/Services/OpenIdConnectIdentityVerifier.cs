@@ -3,11 +3,13 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+
 using Relativa.Authentication.Application.Exceptions;
 using Relativa.Authentication.Application.Interfaces;
 using Relativa.Authentication.Application.Options;

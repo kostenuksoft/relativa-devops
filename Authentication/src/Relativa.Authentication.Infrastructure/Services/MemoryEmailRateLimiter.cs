@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+
 using Relativa.Authentication.Application.Interfaces;
 
 namespace Relativa.Authentication.Infrastructure.Services;

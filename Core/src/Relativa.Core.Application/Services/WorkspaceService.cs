@@ -1,5 +1,7 @@
 using System.Text.Json;
+
 using FluentValidation;
+
 using Relativa.Core.Application.Authorization;
 using Relativa.Core.Application.DTOs.Workspace;
 using Relativa.Core.Application.Exceptions;
@@ -221,7 +223,7 @@ public sealed class WorkspaceService(
             WorkspacePermissions.DeleteWorkspace,
             ct);
         if (!canDeleteWorkspace && !isOrgOwner && !isWsAdminFallback)
-            throw new AppException("archive_workspace_admins_only", 403, 
+            throw new AppException("archive_workspace_admins_only", 403,
                 "Only workspace admins or organization owners can archive a workspace.");
 
         var workspace = await workspaceRepository.GetByIdAsync(workspaceId, ct)

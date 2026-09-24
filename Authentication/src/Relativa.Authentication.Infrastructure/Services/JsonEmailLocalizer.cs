@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+
 using Relativa.Authentication.Application.Interfaces;
 
 namespace Relativa.Authentication.Infrastructure.Services;

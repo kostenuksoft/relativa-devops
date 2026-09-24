@@ -1,5 +1,7 @@
 using System.Text.Json;
+
 using FluentValidation;
+
 using Relativa.Core.Application.Authorization;
 using Relativa.Core.Application.DTOs.Organization;
 using Relativa.Core.Application.Exceptions;
@@ -236,7 +238,7 @@ public sealed class OrganizationService(
 
         if (callerMembership.Role!.Priority >= targetMember.Role!.Priority)
         {
-            throw new AppException("insufficient_role_authority", 403, 
+            throw new AppException("insufficient_role_authority", 403,
                 "You cannot perform this action on a member whose organization role has equal or higher authority than yours.");
         }
 

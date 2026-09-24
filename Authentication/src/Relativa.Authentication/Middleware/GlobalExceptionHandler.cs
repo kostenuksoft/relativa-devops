@@ -1,8 +1,12 @@
 using System.Text.Json;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+
 using Npgsql;
+
 using Relativa.Authentication.Application.Exceptions;
 
 namespace Relativa.Authentication.Middleware;
