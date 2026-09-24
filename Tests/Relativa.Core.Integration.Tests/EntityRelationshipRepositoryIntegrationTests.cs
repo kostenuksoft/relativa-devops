@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Relativa.Core.Infrastructure.Data;
@@ -14,7 +13,7 @@ public sealed class EntityRelationshipRepositoryIntegrationTests : IAsyncLifetim
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine").WithDatabase("entity_rel_test")
         .WithUsername("relativa").WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432)).Build();
+        .Build();
 
     private DbContextOptions<RelativaDbContext> _opts = null!;
     private int _dealTypeId, _clientTypeId, _relTypeId, _deal1, _client1, _client2, _wsId;

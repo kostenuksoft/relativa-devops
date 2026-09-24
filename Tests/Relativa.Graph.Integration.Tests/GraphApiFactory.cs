@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -21,7 +20,6 @@ public sealed class GraphApiFactory : WebApplicationFactory<Program>, IAsyncLife
         .WithDatabase("graph_api_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     public int OrgId { get; private set; }
