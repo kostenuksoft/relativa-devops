@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using Microsoft.Extensions.Caching.Memory;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +16,7 @@ public sealed class WorkspaceDashboardServiceEdgeTests : IAsyncLifetime
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine").WithDatabase("ws_dashboard_edge_test")
         .WithUsername("relativa").WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432)).Build();
+        .Build();
 
     private GraphQueryDbContext _db = null!;
     private WorkspaceDashboardService _svc = null!;

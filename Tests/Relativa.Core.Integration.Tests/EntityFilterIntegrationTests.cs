@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Relativa.Core.Domain.Interfaces;
@@ -17,7 +16,6 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
         .WithDatabase("filter_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private DbContextOptions<RelativaDbContext> _opts = null!;

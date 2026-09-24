@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +27,6 @@ public sealed class AuditIntegrationTests : IAsyncLifetime
         .WithDatabase("audit_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private readonly RabbitMqContainer _rabbitmq = new RabbitMqBuilder()

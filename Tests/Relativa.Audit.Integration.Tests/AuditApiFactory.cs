@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Text;
-using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -26,7 +25,6 @@ public sealed class AuditApiFactory : WebApplicationFactory<Program>, IAsyncLife
         .WithDatabase("audit_api_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     public async Task InitializeAsync()

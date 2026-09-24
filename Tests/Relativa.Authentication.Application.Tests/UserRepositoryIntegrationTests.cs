@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Relativa.Authentication.Infrastructure.Data;
@@ -16,7 +15,6 @@ public sealed class UserRepositoryIntegrationTests : IAsyncLifetime
         .WithDatabase("auth_user_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private DbContextOptions<AuthDbContext> _opts = null!;
