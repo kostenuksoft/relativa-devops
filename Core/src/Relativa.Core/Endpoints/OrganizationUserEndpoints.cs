@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Core.Application.DTOs.Organization;
 using Relativa.Core.Application.Interfaces;

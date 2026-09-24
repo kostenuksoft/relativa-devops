@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+
 using Relativa.Core.Application.Interfaces;
 
 namespace Relativa.Core.Hubs;

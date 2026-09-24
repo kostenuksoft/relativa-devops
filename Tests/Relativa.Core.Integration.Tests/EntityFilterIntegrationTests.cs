@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Relativa.Core.Domain.Interfaces;
@@ -17,7 +16,6 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
         .WithDatabase("filter_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private DbContextOptions<RelativaDbContext> _opts = null!;
@@ -72,7 +70,10 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
         await db.SaveChangesAsync();
         db.UserRoleWorkspaces.Add(new UserRoleWorkspace
         {
-            UserId = _userId, WorkspaceId = _wsId, WsRoleId = wsRole.Id, JoinedAt = DateTime.UtcNow
+            UserId = _userId,
+            WorkspaceId = _wsId,
+            WsRoleId = wsRole.Id,
+            JoinedAt = DateTime.UtcNow
         });
 
         var entityType = new EntityType { Name = "filter_type" };
@@ -80,18 +81,18 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
         await db.SaveChangesAsync();
         _typeId = entityType.Id;
 
-        var propStr     = new Property { Name = "str_field",  DataType = PropertyDataType.String };
-        var propInt     = new Property { Name = "int_field",  DataType = PropertyDataType.Int };
-        var propDec     = new Property { Name = "dec_field",  DataType = PropertyDataType.Decimal };
-        var propBool    = new Property { Name = "bool_field", DataType = PropertyDataType.Bool };
-        var propDate    = new Property { Name = "date_field", DataType = PropertyDataType.Date };
+        var propStr = new Property { Name = "str_field", DataType = PropertyDataType.String };
+        var propInt = new Property { Name = "int_field", DataType = PropertyDataType.Int };
+        var propDec = new Property { Name = "dec_field", DataType = PropertyDataType.Decimal };
+        var propBool = new Property { Name = "bool_field", DataType = PropertyDataType.Bool };
+        var propDate = new Property { Name = "date_field", DataType = PropertyDataType.Date };
         db.Properties.AddRange(propStr, propInt, propDec, propBool, propDate);
         await db.SaveChangesAsync();
-        _propStringId  = propStr.Id;
-        _propIntId     = propInt.Id;
+        _propStringId = propStr.Id;
+        _propIntId = propInt.Id;
         _propDecimalId = propDec.Id;
-        _propBoolId    = propBool.Id;
-        _propDateId    = propDate.Id;
+        _propBoolId = propBool.Id;
+        _propDateId = propDate.Id;
 
         db.EntityTypeProperties.AddRange(
             new EntityTypeProperty { EntityTypeId = _typeId, PropertyId = _propStringId },
@@ -118,22 +119,22 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
 
         db.EntityPropertyValues.AddRange(
             new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propStringId, ValueString = "Alpha" },
-            new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propIntId,    ValueInt    = 10 },
+            new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propIntId, ValueInt = 10 },
             new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propDecimalId, ValueDecimal = 1.5m },
-            new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propBoolId,   ValueBool   = true },
-            new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propDateId,   ValueDate   = new DateOnly(2025, 1, 1) },
+            new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propBoolId, ValueBool = true },
+            new EntityPropertyValue { EntityId = _entity1Id, PropertyId = _propDateId, ValueDate = new DateOnly(2025, 1, 1) },
 
             new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propStringId, ValueString = "Beta" },
-            new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propIntId,    ValueInt    = 20 },
+            new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propIntId, ValueInt = 20 },
             new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propDecimalId, ValueDecimal = 2.5m },
-            new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propBoolId,   ValueBool   = false },
-            new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propDateId,   ValueDate   = new DateOnly(2025, 6, 1) },
+            new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propBoolId, ValueBool = false },
+            new EntityPropertyValue { EntityId = _entity2Id, PropertyId = _propDateId, ValueDate = new DateOnly(2025, 6, 1) },
 
             new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propStringId, ValueString = "Alpha Extra" },
-            new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propIntId,    ValueInt    = 30 },
+            new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propIntId, ValueInt = 30 },
             new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propDecimalId, ValueDecimal = 3.5m },
-            new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propBoolId,   ValueBool   = true },
-            new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propDateId,   ValueDate   = new DateOnly(2026, 1, 1) }
+            new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propBoolId, ValueBool = true },
+            new EntityPropertyValue { EntityId = _entity3Id, PropertyId = _propDateId, ValueDate = new DateOnly(2026, 1, 1) }
         );
 
         await db.SaveChangesAsync();
@@ -311,7 +312,7 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
     public void Pagination_SkipAndTake_ReturnsCorrectSlice()
     {
         var (page1, total) = GetAll(skip: 0, take: 2);
-        var (page2, _)     = GetAll(skip: 2, take: 2);
+        var (page2, _) = GetAll(skip: 2, take: 2);
 
         total.Should().Be(3);
         page1.Should().HaveCount(2);
@@ -323,7 +324,7 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
     public async Task UpdateAsync_ReplacesAllPropertyValues()
     {
         await using var db = Db();
-        var repo   = new EntityRepository(db);
+        var repo = new EntityRepository(db);
         var entity = await db.Entities.FindAsync(_entity1Id);
 
         var newValues = new List<EntityPropertyValue>
@@ -344,7 +345,7 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task EntityTypeRepository_GetAllWithPropertiesAsync_ReturnsTypesWithProperties()
     {
-        var repo   = new EntityTypeRepository(Db());
+        var repo = new EntityTypeRepository(Db());
         var result = await repo.GetAllWithPropertiesAsync();
 
         result.Should().NotBeEmpty();
@@ -492,14 +493,18 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
         {
             var rt = new EntityRelationshipType
             {
-                Name = "src_link", SourceEntityTypeId = _typeId, TargetEntityTypeId = _typeId,
+                Name = "src_link",
+                SourceEntityTypeId = _typeId,
+                TargetEntityTypeId = _typeId,
             };
             db.Set<EntityRelationshipType>().Add(rt);
             await db.SaveChangesAsync();
             relTypeId = rt.Id;
             db.Set<EntityRelationship>().Add(new EntityRelationship
             {
-                SourceEntityId = _entity1Id, TargetEntityId = _entity2Id, RelationshipTypeId = relTypeId,
+                SourceEntityId = _entity1Id,
+                TargetEntityId = _entity2Id,
+                RelationshipTypeId = relTypeId,
             });
             await db.SaveChangesAsync();
         }
@@ -519,14 +524,18 @@ public sealed class EntityFilterIntegrationTests : IAsyncLifetime
         {
             var rt = new EntityRelationshipType
             {
-                Name = "tgt_link", SourceEntityTypeId = _typeId, TargetEntityTypeId = _typeId,
+                Name = "tgt_link",
+                SourceEntityTypeId = _typeId,
+                TargetEntityTypeId = _typeId,
             };
             db.Set<EntityRelationshipType>().Add(rt);
             await db.SaveChangesAsync();
             relTypeId = rt.Id;
             db.Set<EntityRelationship>().Add(new EntityRelationship
             {
-                SourceEntityId = _entity1Id, TargetEntityId = _entity3Id, RelationshipTypeId = relTypeId,
+                SourceEntityId = _entity1Id,
+                TargetEntityId = _entity3Id,
+                RelationshipTypeId = relTypeId,
             });
             await db.SaveChangesAsync();
         }

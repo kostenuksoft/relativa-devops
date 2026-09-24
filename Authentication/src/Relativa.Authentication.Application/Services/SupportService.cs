@@ -1,7 +1,10 @@
 using System.Net;
 using System.Text.RegularExpressions;
+
 using FluentValidation;
+
 using Microsoft.Extensions.Options;
+
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Authentication.Application.Exceptions;
 using Relativa.Authentication.Application.Interfaces;

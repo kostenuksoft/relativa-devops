@@ -1,0 +1,842 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - 'release/**'
+      - 'feature/**'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+      - development
+      - 'release/**'
+  workflow_dispatch:
+    inputs:
+      verbosity:
+        description: 'Test output verbosity'
+        required: false
+        default: 'minimal'
+        type: choice
+        options:
+          - minimal
+          - normal
+          - detailed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  authentication-unit-tests:
+    name: Authentication — Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-auth-${{ hashFiles('Authentication/**/*.csproj') }}
+          restore-keys: nuget-auth-
+
+      - name: Restore
+        run: dotnet restore Authentication/Relativa.Authentication.sln
+
+      - name: Build
+        run: dotnet build Authentication/Relativa.Authentication.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Authentication.Application.Tests --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/authentication.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-authentication-unit
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  core-unit-tests:
+    name: Core — Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-core-unit-${{ hashFiles('Core/**/*.csproj') }}
+          restore-keys: nuget-core-unit-
+
+      - name: Restore
+        run: dotnet restore Core/Relativa.Core.sln
+
+      - name: Build
+        run: dotnet build Core/Relativa.Core.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Core.Application.Tests --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/core.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-core-unit
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  core-integration-tests:
+    name: Core — Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-core-integration-${{ hashFiles('Core/**/*.csproj') }}
+          restore-keys: nuget-core-integration-
+
+      - name: Restore
+        run: dotnet restore Tests/Relativa.Core.Integration.Tests/Relativa.Core.Integration.Tests.csproj
+
+      - name: Build
+        run: dotnet build Tests/Relativa.Core.Integration.Tests/Relativa.Core.Integration.Tests.csproj --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Core.Integration.Tests/Relativa.Core.Integration.Tests.csproj --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/core.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-core-integration
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  messaging-tests:
+    name: Messaging — Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-messaging-${{ hashFiles('Messaging/**/*.csproj') }}
+          restore-keys: nuget-messaging-
+
+      - name: Restore
+        run: dotnet restore Tests/Relativa.Messaging.Tests/Relativa.Messaging.Tests.csproj
+
+      - name: Build
+        run: dotnet build Tests/Relativa.Messaging.Tests/Relativa.Messaging.Tests.csproj --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Messaging.Tests/Relativa.Messaging.Tests.csproj --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/messaging.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-messaging
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  audit-unit-tests:
+    name: Audit — Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-audit-unit-${{ hashFiles('Audit/**/*.csproj') }}
+          restore-keys: nuget-audit-unit-
+
+      - name: Restore
+        run: dotnet restore Audit/Relativa.Audit.sln
+
+      - name: Build
+        run: dotnet build Audit/Relativa.Audit.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Audit.Application.Tests --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/audit.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-audit-unit
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  audit-integration-tests:
+    name: Audit — Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-audit-${{ hashFiles('Audit/**/*.csproj') }}
+          restore-keys: nuget-audit-
+
+      - name: Restore
+        run: dotnet restore Tests/Relativa.Audit.Integration.Tests/Relativa.Audit.Integration.Tests.csproj
+
+      - name: Build
+        run: dotnet build Tests/Relativa.Audit.Integration.Tests/Relativa.Audit.Integration.Tests.csproj --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Audit.Integration.Tests/Relativa.Audit.Integration.Tests.csproj --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/audit.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-audit-integration
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  graph-integration-tests:
+    name: Graph — Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-graph-integration-${{ hashFiles('Graph/**/*.csproj') }}
+          restore-keys: nuget-graph-integration-
+
+      - name: Restore
+        run: dotnet restore Tests/Relativa.Graph.Integration.Tests/Relativa.Graph.Integration.Tests.csproj
+
+      - name: Build
+        run: dotnet build Tests/Relativa.Graph.Integration.Tests/Relativa.Graph.Integration.Tests.csproj --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test Tests/Relativa.Graph.Integration.Tests/Relativa.Graph.Integration.Tests.csproj --no-build --no-restore --configuration Release --verbosity ${{ inputs.verbosity || 'minimal' }} --collect:"XPlat Code Coverage" --settings ci/coverage/graph.runsettings --results-directory ./TestResults
+
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml-graph-integration
+          path: ./TestResults/**/coverage.cobertura.xml
+          retention-days: 1
+
+
+  ml-tests:
+    name: ML — Lint & Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: relativa
+          POSTGRES_USER: relativa
+          POSTGRES_PASSWORD: relativa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U relativa -d relativa"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_NAME: relativa
+      DB_USER: relativa
+      DB_PASS: relativa
+      DB_HOST: localhost
+      DB_PORT: 5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: ML/pyproject.toml
+
+      - name: Install dependencies
+        working-directory: ML
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        working-directory: ML
+        run: ruff check .
+
+      - name: Build (Django system check)
+        working-directory: ML
+        run: python manage.py check
+
+      - name: Test
+        working-directory: ML
+        run: python manage.py test ml_api --verbosity 2
+
+
+  client-build:
+    name: Client — Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: Client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Client
+        run: npm ci
+
+      - name: Lint (ESLint)
+        working-directory: Client
+        run: npm run lint
+
+      - name: Type-check
+        working-directory: Client
+        run: npm run type-check
+
+      - name: Build
+        working-directory: Client
+        run: npm run build-only
+
+
+  dotnet-service-build:
+    name: ${{ matrix.service }} — Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: Gateway
+            solution: Gateway/Relativa.Gateway.sln
+          - service: Migration
+            solution: Migration/Relativa.Migration.sln
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ matrix.service }}-${{ hashFiles(format('{0}/**/*.csproj', matrix.service)) }}
+          restore-keys: nuget-${{ matrix.service }}-
+
+      - name: Restore
+        run: dotnet restore ${{ matrix.solution }}
+
+      - name: Build
+        run: dotnet build ${{ matrix.solution }} --no-restore --configuration Release
+
+      - name: Test
+        run: echo "No test project for ${{ matrix.service }} - build is the verification step."
+
+
+  dotnet-lint:
+    name: .NET Format — ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Audit
+            solution: Audit/Relativa.Audit.sln
+          - name: Authentication
+            solution: Authentication/Relativa.Authentication.sln
+          - name: Core
+            solution: Core/Relativa.Core.sln
+          - name: Gateway
+            solution: Gateway/Relativa.Gateway.sln
+          - name: Graph
+            solution: Graph/Relativa.Graph.sln
+          - name: Migration
+            solution: Migration/Relativa.Migration.sln
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-format-${{ matrix.name }}-${{ hashFiles(format('{0}/**/*.csproj', matrix.name)) }}
+          restore-keys: nuget-format-${{ matrix.name }}-
+
+      - name: Restore
+        run: dotnet restore ${{ matrix.solution }}
+
+      - name: Format check
+        run: dotnet format ${{ matrix.solution }} --verify-no-changes --severity error --no-restore
+
+
+  coverage-report:
+    name: Combined Coverage Report
+    runs-on: ubuntu-latest
+    needs: [authentication-unit-tests, core-unit-tests, core-integration-tests, messaging-tests, audit-unit-tests, audit-integration-tests, graph-integration-tests]
+    if: always()
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache dotnet tools
+        uses: actions/cache@v4
+        with:
+          path: ~/.dotnet/tools
+          key: dotnet-tools-reportgenerator-${{ runner.os }}
+
+      - name: Install reportgenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool || dotnet tool update -g dotnet-reportgenerator-globaltool
+
+      - name: Download all coverage XMLs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-xml-*
+          path: ./coverage-xml
+          merge-multiple: false
+
+      - name: Generate combined coverage report
+        run: |
+          reportgenerator \
+            -reports:"./coverage-xml/**/coverage.cobertura.xml" \
+            -targetdir:"./CoverageReport" \
+            -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;JsonSummary" \
+            "-assemblyfilters:+Relativa.*" \
+            "-classfilters:-*Dto;-*Request;-*Response;-*Endpoints*;-*Program;-*Generated*;-*Options;-*Exception;-*Routing;-*Versions;-*CompilerServices;-*Migrations*;-*EmailSender;-*SmsSender;-*IdentityVerifier"
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          cat ./CoverageReport/Summary.txt || true
+          cat ./CoverageReport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Enforce per-assembly coverage thresholds
+        env:
+          MIN_LINE: '80'
+          MIN_BRANCH: '80'
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+
+          min_line = float(os.environ['MIN_LINE'])
+          min_branch = float(os.environ['MIN_BRANCH'])
+
+          with open('./CoverageReport/Summary.json', encoding='utf-8-sig') as fh:
+              data = json.load(fh)
+
+          assemblies = data['coverage']['assemblies']
+          failures = []
+
+          for a in assemblies:
+              line = a.get('coverage')
+              branch = a.get('branchcoverage')
+              if line is not None and line < min_line:
+                  failures.append(f"{a['name']}: line {line:.1f}% < {min_line:.0f}%")
+              if branch is not None and branch < min_branch:
+                  failures.append(f"{a['name']}: branch {branch:.1f}% < {min_branch:.0f}%")
+
+          print(f"Evaluated {len(assemblies)} assemblies against line>={min_line:.0f}% branch>={min_branch:.0f}%")
+          if not assemblies:
+              print("Coverage gate FAILED: no assemblies in report (partial/failed upstream suites?)")
+              sys.exit(1)
+          if failures:
+              print("Coverage gate FAILED:")
+              for f in failures:
+                  print("  -", f)
+              sys.exit(1)
+          print("Coverage gate passed.")
+          PY
+
+      - name: Upload combined coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./CoverageReport
+          retention-days: 14
+
+
+  e2e-tests:
+    name: E2E — Playwright
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.draft }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env
+        run: |
+          cat > .env <<'EOF'
+          DB_NAME=relativa
+          DB_USER=relativa
+          DB_PASS=relativa_pass
+          DB_PORT=5432
+          PGADMIN_DEFAULT_EMAIL=admin@relativa.com
+          PGADMIN_DEFAULT_PASSWORD=admin
+          PGADMIN_PORT=5050
+          JWT_SECRET=super-secret-key-that-should-be-at-least-32-chars!
+          JWT_ISSUER=relativa-auth
+          JWT_AUDIENCE=relativa
+          VITE_GATEWAY_URL=http://localhost:8080
+          CLIENT_PORT=3000
+          EOF
+
+      - name: Pull base images
+        run: |
+          for img in \
+            mcr.microsoft.com/dotnet/sdk:10.0 \
+            mcr.microsoft.com/dotnet/aspnet:10.0 \
+            node:22-alpine \
+            python:3.12-slim \
+            postgres:16-alpine; do
+            for i in 1 2 3; do
+              docker pull "$img" && break || sleep 15
+            done
+          done
+
+      - name: Start services
+        run: docker compose up -d --build --wait
+        timeout-minutes: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Tests/e2e/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Tests/e2e
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ hashFiles('Tests/e2e/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: Tests/e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS dependencies (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        working-directory: Tests/e2e
+        run: npx playwright install-deps chromium
+
+      - name: Run Playwright tests
+        working-directory: Tests/e2e
+        run: npx playwright test
+
+      - name: Upload E2E HTML report
+        id: e2e-html-report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: Tests/e2e/html-report
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Link E2E HTML report in summary
+        if: always() && steps.e2e-html-report.outputs.artifact-url != ''
+        run: |
+          {
+            echo "### E2E HTML report"
+            echo "Download the **playwright-html-report** artifact, unzip it, and open \`index.html\`."
+            echo ""
+            echo "[Download report](${{ steps.e2e-html-report.outputs.artifact-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload E2E screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: Tests/e2e/test-results
+          retention-days: 14
+
+      - name: Upload test results JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-json
+          path: Tests/e2e/results.json
+          retention-days: 14
+
+      - name: Teardown
+        if: always()
+        run: docker compose down -v
+
+
+  load-tests:
+    name: Load — Performance Tests
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.draft }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Create .env
+        run: |
+          cat > .env <<'EOF'
+          DB_NAME=relativa
+          DB_USER=relativa
+          DB_PASS=relativa_pass
+          DB_PORT=5432
+          PGADMIN_DEFAULT_EMAIL=admin@relativa.com
+          PGADMIN_DEFAULT_PASSWORD=admin
+          PGADMIN_PORT=5050
+          JWT_SECRET=super-secret-key-that-should-be-at-least-32-chars!
+          JWT_ISSUER=relativa-auth
+          JWT_AUDIENCE=relativa
+          VITE_GATEWAY_URL=http://localhost:8080
+          CLIENT_PORT=3000
+          EOF
+
+      - name: Start services
+        run: docker compose up -d --build --wait
+        timeout-minutes: 10
+
+      - name: Run load tests
+        continue-on-error: true
+        env:
+          LOAD_GATEWAY: 'http://localhost:8080'
+          LOAD_ADMIN_EMAIL: 'admin@relativa.com'
+          LOAD_ADMIN_PASSWORD: 'Demo1234!'
+          LOAD_PROFILE: 'smoke'
+          LOAD_RATE: '3'
+          LOAD_DURATION_SEC: '15'
+          LOAD_WARMUP_SEC: '3'
+          LOAD_P95_MS: '3000'
+          LOAD_MAX_FAIL_RATE: '0.05'
+        run: dotnet run --project Tests/Relativa.LoadTests/Relativa.LoadTests.csproj -c Release
+
+      - name: Upload load test reports
+        id: load-reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-reports
+          path: |
+            Tests/Relativa.LoadTests/load-reports
+            load-reports
+          retention-days: 14
+
+      - name: Link load report in summary
+        if: always() && steps.load-reports.outputs.artifact-url != ''
+        run: |
+          {
+            echo "### Load test report"
+            echo "Download the **load-test-reports** artifact, unzip it, and open the NBomber \`*.html\` report."
+            echo ""
+            echo "[Download report](${{ steps.load-reports.outputs.artifact-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Teardown
+        if: always()
+        run: docker compose down -v
+
+
+  build-images:
+    name: Image Build — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs:
+      - authentication-unit-tests
+      - core-unit-tests
+      - core-integration-tests
+      - messaging-tests
+      - audit-unit-tests
+      - audit-integration-tests
+      - graph-integration-tests
+      - ml-tests
+      - client-build
+      - dotnet-service-build
+      - dotnet-lint
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: auth
+            context: .
+            dockerfile: Authentication/Dockerfile
+          - service: core
+            context: .
+            dockerfile: Core/Dockerfile
+          - service: graph
+            context: .
+            dockerfile: Graph/Dockerfile
+          - service: audit
+            context: .
+            dockerfile: Audit/Dockerfile
+          - service: migration
+            context: .
+            dockerfile: Migration/Dockerfile
+          - service: ml
+            context: ./ML
+            dockerfile: ./ML/Dockerfile
+          - service: gateway
+            context: ./Gateway
+            dockerfile: ./Gateway/Dockerfile
+          - service: client
+            context: ./Client
+            dockerfile: ./Client/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false
+          load: true
+          tags: relativa-${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: relativa-${{ matrix.service }}:${{ github.sha }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+          exit-code: '1'
+
+
+  publish-images:
+    name: Publish — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development')
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: auth
+            context: .
+            dockerfile: Authentication/Dockerfile
+          - service: core
+            context: .
+            dockerfile: Core/Dockerfile
+          - service: graph
+            context: .
+            dockerfile: Graph/Dockerfile
+          - service: audit
+            context: .
+            dockerfile: Audit/Dockerfile
+          - service: migration
+            context: .
+            dockerfile: Migration/Dockerfile
+          - service: ml
+            context: ./ML
+            dockerfile: ./ML/Dockerfile
+          - service: gateway
+            context: ./Gateway
+            dockerfile: ./Gateway/Dockerfile
+          - service: client
+            context: ./Client
+            dockerfile: ./Client/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/relativa-${{ matrix.service }}
+          tags: |
+            type=sha,format=long
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}

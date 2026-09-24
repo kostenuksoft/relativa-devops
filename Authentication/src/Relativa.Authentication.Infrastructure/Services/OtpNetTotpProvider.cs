@@ -1,4 +1,5 @@
 using OtpNet;
+
 using Relativa.Authentication.Domain.Interfaces;
 
 namespace Relativa.Authentication.Infrastructure.Services;

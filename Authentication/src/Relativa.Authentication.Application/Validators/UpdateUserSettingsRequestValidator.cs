@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
+
 using FluentValidation;
+
 using Relativa.Authentication.Application.DTOs;
 
 namespace Relativa.Authentication.Application.Validators;

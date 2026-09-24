@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Relativa.Core.Infrastructure.Data;
@@ -16,7 +15,6 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
         .WithDatabase("relativa_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private RelativaDbContext _db = null!;
@@ -52,11 +50,11 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
 
         var user = new User
         {
-            FirstName  = "Test",
-            LastName   = "User",
-            Email      = "test@relativa.com",
-            Password   = "hashed",
-            CreatedAt  = DateTime.UtcNow,
+            FirstName = "Test",
+            LastName = "User",
+            Email = "test@relativa.com",
+            Password = "hashed",
+            CreatedAt = DateTime.UtcNow,
             IsArchived = false
         };
         _db.Users.Add(user);
@@ -64,26 +62,26 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
         _seedUserId = user.Id;
 
         var clientType = new EntityType { Name = "client" };
-        var dealType   = new EntityType { Name = "deal" };
+        var dealType = new EntityType { Name = "deal" };
         _db.EntityTypes.AddRange(clientType, dealType);
         await _db.SaveChangesAsync();
 
-        var firstName  = new Property { Name = "first_name",    DataType = PropertyDataType.String };
-        var lastName   = new Property { Name = "last_name",     DataType = PropertyDataType.String };
-        var dealValue  = new Property { Name = "deal_value",    DataType = PropertyDataType.Decimal };
-        var closeDate  = new Property { Name = "expected_close",DataType = PropertyDataType.Date };
+        var firstName = new Property { Name = "first_name", DataType = PropertyDataType.String };
+        var lastName = new Property { Name = "last_name", DataType = PropertyDataType.String };
+        var dealValue = new Property { Name = "deal_value", DataType = PropertyDataType.Decimal };
+        var closeDate = new Property { Name = "expected_close", DataType = PropertyDataType.Date };
         _db.Properties.AddRange(firstName, lastName, dealValue, closeDate);
         await _db.SaveChangesAsync();
 
         _db.EntityTypeProperties.AddRange(
             new EntityTypeProperty { EntityTypeId = clientType.Id, PropertyId = firstName.Id, IsRequired = true },
-            new EntityTypeProperty { EntityTypeId = clientType.Id, PropertyId = lastName.Id,  IsRequired = true },
-            new EntityTypeProperty { EntityTypeId = dealType.Id,   PropertyId = dealValue.Id, IsRequired = false },
-            new EntityTypeProperty { EntityTypeId = dealType.Id,   PropertyId = closeDate.Id, IsRequired = false }
+            new EntityTypeProperty { EntityTypeId = clientType.Id, PropertyId = lastName.Id, IsRequired = true },
+            new EntityTypeProperty { EntityTypeId = dealType.Id, PropertyId = dealValue.Id, IsRequired = false },
+            new EntityTypeProperty { EntityTypeId = dealType.Id, PropertyId = closeDate.Id, IsRequired = false }
         );
 
-        var workspace = new Workspace { Name = "Test WS",  IsArchived = false, CreatedByUserId = user.Id, OrganizationId = org.Id };
-        var otherWs   = new Workspace { Name = "Other WS", IsArchived = false, CreatedByUserId = user.Id, OrganizationId = org.Id };
+        var workspace = new Workspace { Name = "Test WS", IsArchived = false, CreatedByUserId = user.Id, OrganizationId = org.Id };
+        var otherWs = new Workspace { Name = "Other WS", IsArchived = false, CreatedByUserId = user.Id, OrganizationId = org.Id };
         _db.Workspaces.AddRange(workspace, otherWs);
 
         await _db.SaveChangesAsync();
@@ -93,14 +91,14 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
     public async Task CreateAsync_ClientEntity_CreatesEntityWorkspaceRow()
     {
         var workspaceId = _db.Workspaces.Single(w => w.Name == "Test WS").Id;
-        var typeProps   = await _repo.GetTypePropertiesAsync(
+        var typeProps = await _repo.GetTypePropertiesAsync(
             _db.EntityTypes.Single(t => t.Name == "client").Id);
 
         var entity = new Entity
         {
-            EntityTypeId    = _db.EntityTypes.Single(t => t.Name == "client").Id,
+            EntityTypeId = _db.EntityTypes.Single(t => t.Name == "client").Id,
             CreatedByUserId = _seedUserId,
-            IsArchived      = false
+            IsArchived = false
         };
         var pvs = new List<EntityPropertyValue>
         {
@@ -120,8 +118,8 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
     public async Task CreateAsync_DealEntity_PersistsDecimalAndDatePropertyValues()
     {
         var workspaceId = _db.Workspaces.Single(w => w.Name == "Test WS").Id;
-        var dealTypeId  = _db.EntityTypes.Single(t => t.Name == "deal").Id;
-        var typeProps   = await _repo.GetTypePropertiesAsync(dealTypeId);
+        var dealTypeId = _db.EntityTypes.Single(t => t.Name == "deal").Id;
+        var typeProps = await _repo.GetTypePropertiesAsync(dealTypeId);
 
         var entity = new Entity { EntityTypeId = dealTypeId, CreatedByUserId = _seedUserId, IsArchived = false };
         var pvs = new List<EntityPropertyValue>
@@ -153,15 +151,15 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
     public async Task GetByIdInWorkspaceAsync_EntityInDifferentWorkspace_ReturnsNull()
     {
         var workspaceId = _db.Workspaces.Single(w => w.Name == "Test WS").Id;
-        var otherWsId   = _db.Workspaces.Single(w => w.Name == "Other WS").Id;
-        var typeProps   = await _repo.GetTypePropertiesAsync(
+        var otherWsId = _db.Workspaces.Single(w => w.Name == "Other WS").Id;
+        var typeProps = await _repo.GetTypePropertiesAsync(
             _db.EntityTypes.Single(t => t.Name == "client").Id);
 
         var entity = new Entity
         {
-            EntityTypeId    = _db.EntityTypes.Single(t => t.Name == "client").Id,
+            EntityTypeId = _db.EntityTypes.Single(t => t.Name == "client").Id,
             CreatedByUserId = _seedUserId,
-            IsArchived      = false
+            IsArchived = false
         };
         var pvs = new List<EntityPropertyValue>
         {
@@ -180,7 +178,7 @@ public sealed class EntityIntegrationTests : IAsyncLifetime
     {
         var workspaceId = _db.Workspaces.Single(w => w.Name == "Test WS").Id;
         var clientTypeId = _db.EntityTypes.Single(t => t.Name == "client").Id;
-        var typeProps    = await _repo.GetTypePropertiesAsync(clientTypeId);
+        var typeProps = await _repo.GetTypePropertiesAsync(clientTypeId);
 
         var entityCountBefore = await _db.Entities.CountAsync(e => e.EntityTypeId == clientTypeId);
 

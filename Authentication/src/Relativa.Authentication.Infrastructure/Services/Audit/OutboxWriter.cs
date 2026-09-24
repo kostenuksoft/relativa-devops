@@ -1,4 +1,5 @@
 using System.Text.Json;
+
 using Relativa.Authentication.Infrastructure.Data;
 using Relativa.Persistence.Contracts;
 using Relativa.Persistence.Entities;

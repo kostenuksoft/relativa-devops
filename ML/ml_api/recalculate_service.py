@@ -5,11 +5,11 @@ import time
 import uuid
 from datetime import date, datetime, timezone
 
-logger = logging.getLogger(__name__)
-
 import pika
 from django.conf import settings
 from django.db import connection, transaction
+
+logger = logging.getLogger(__name__)
 
 MAX_BATCH_SIZE = int(os.environ.get("ML_SCORE_BATCH_MAX_SIZE", "200"))
 BATCH_TIMEOUT_SECONDS = 5.0
@@ -382,7 +382,8 @@ def _ensure_deal_analysis_entities(deal_ids, config, deadline, created_by_user_i
             for deal_id in missing_deals:
                 _check_deadline(deadline)
                 cursor.execute(
-                    "INSERT INTO entity (entity_type_id, created_by_user_id, is_archived) VALUES (%s, %s, FALSE) RETURNING id",
+                    "INSERT INTO entity (entity_type_id, created_by_user_id, is_archived) "
+                    "VALUES (%s, %s, FALSE) RETURNING id",
                     [analysis_type_id, created_by_user_id],
                 )
                 analysis_id = cursor.fetchone()[0]
@@ -412,7 +413,8 @@ def _load_analysis_state(deal_ids, config):
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT er.source_entity_id, er.target_entity_id, epv.property_id, epv.value_int, epv.value_decimal, epv.value_date
+            SELECT er.source_entity_id, er.target_entity_id, epv.property_id,
+                   epv.value_int, epv.value_decimal, epv.value_date
             FROM entity_relationship er
             LEFT JOIN entity_property_value epv ON epv.entity_id = er.target_entity_id
             WHERE er.relationship_type_id = %s
@@ -488,7 +490,8 @@ def _load_contract_inputs(deal_ids, config):
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT er.source_entity_id, er.target_entity_id, epv.property_id, epv.value_string, epv.value_decimal, epv.value_date
+            SELECT er.source_entity_id, er.target_entity_id, epv.property_id,
+                   epv.value_string, epv.value_decimal, epv.value_date
             FROM entity_relationship er
             INNER JOIN entity contract ON contract.id = er.target_entity_id AND contract.is_archived = FALSE
             LEFT JOIN entity_property_value epv ON epv.entity_id = er.target_entity_id
@@ -629,13 +632,29 @@ def _recompute_analysis(deal_ids, analysis_rows, deal_rows, contracts_by_deal, c
                 days_since_created = max(0, (today - created_at).days)
                 stage_encoded = DEAL_STATUS_TO_STAGE[status]
                 num_interactions = max(0, min(100, days_since_created // 7))
-                active_contracts = [c for c in contracts if (c.get(CONTRACT_PROP_STATUS) or "").lower() in ACTIVE_CONTRACT_STATUSES]
+                active_contracts = [
+                    c
+                    for c in contracts
+                    if (c.get(CONTRACT_PROP_STATUS) or "").lower() in ACTIVE_CONTRACT_STATUSES
+                ]
                 chosen_contracts = active_contracts if active_contracts else contracts
-                amounts = [float(c.get(CONTRACT_PROP_AMOUNT) or 0.0) for c in chosen_contracts if c.get(CONTRACT_PROP_AMOUNT) is not None]
+                amounts = [
+                    float(c.get(CONTRACT_PROP_AMOUNT) or 0.0)
+                    for c in chosen_contracts
+                    if c.get(CONTRACT_PROP_AMOUNT) is not None
+                ]
                 avg_deal_value = float(sum(amounts) / len(amounts)) if amounts else float(deal_value)
                 num_open_deals = len(active_contracts)
-                signed_dates = [c.get(CONTRACT_PROP_SIGNED_AT) for c in chosen_contracts if c.get(CONTRACT_PROP_SIGNED_AT) is not None]
-                days_since_last_contact = max(0, (today - max(signed_dates)).days) if signed_dates else max(0, min(365, days_since_created // 2))
+                signed_dates = [
+                    c.get(CONTRACT_PROP_SIGNED_AT)
+                    for c in chosen_contracts
+                    if c.get(CONTRACT_PROP_SIGNED_AT) is not None
+                ]
+                days_since_last_contact = (
+                    max(0, (today - max(signed_dates)).days)
+                    if signed_dates
+                    else max(0, min(365, days_since_created // 2))
+                )
 
                 expected_close = deal.get(DEAL_PROP_EXPECTED_CLOSE)
                 days_until_close = (expected_close - today).days if expected_close is not None else None

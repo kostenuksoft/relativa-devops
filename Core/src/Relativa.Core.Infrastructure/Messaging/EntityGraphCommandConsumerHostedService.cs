@@ -1,11 +1,14 @@
 using System.Text;
 using System.Text.Json;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+
 using Relativa.Core.Application.DTOs.Entity;
 using Relativa.Core.Application.Interfaces;
 using Relativa.Persistence.Contracts;

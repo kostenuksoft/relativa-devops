@@ -1,6 +1,7 @@
-using Relativa.Core.Application.Exceptions;
 using FluentValidation;
+
 using Relativa.Core.Application.DTOs.Role;
+using Relativa.Core.Application.Exceptions;
 using Relativa.Core.Application.Interfaces;
 using Relativa.Core.Application.Utilities;
 using Relativa.Core.Domain.Interfaces;
