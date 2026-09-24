@@ -769,6 +769,7 @@ jobs:
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
+          trivyignores: .trivyignore
           exit-code: '1'
 
 
