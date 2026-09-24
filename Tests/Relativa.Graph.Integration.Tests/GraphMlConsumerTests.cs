@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +25,7 @@ public sealed class GraphMlConsumerTests : IAsyncLifetime
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine").WithDatabase("graph_ml_consumer_test")
         .WithUsername("relativa").WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432)).Build();
+        .Build();
 
     private readonly RabbitMqContainer _rabbitmq = new RabbitMqBuilder()
         .WithImage("rabbitmq:3.13-alpine").Build();

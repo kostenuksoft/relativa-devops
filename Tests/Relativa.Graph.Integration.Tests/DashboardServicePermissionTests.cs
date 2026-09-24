@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
@@ -18,7 +17,6 @@ public sealed class DashboardServicePermissionTests : IAsyncLifetime
         .WithDatabase("relativa_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private GraphQueryDbContext _db = null!;

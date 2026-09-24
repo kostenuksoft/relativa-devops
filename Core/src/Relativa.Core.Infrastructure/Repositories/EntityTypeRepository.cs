@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using Relativa.Core.Domain.Interfaces;
 using Relativa.Core.Infrastructure.Data;
 using Relativa.Persistence.Entities;

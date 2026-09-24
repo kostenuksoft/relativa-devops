@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+
 using Microsoft.EntityFrameworkCore.Migrations;
+
 using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
 
 #nullable disable

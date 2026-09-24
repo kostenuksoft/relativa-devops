@@ -303,7 +303,9 @@ public sealed class EntityServiceTests
         List<EntityPropertyValue>? capturedValues = null;
         var created = new Entity
         {
-            Id = 20, EntityTypeId = 2, IsArchived = false,
+            Id = 20,
+            EntityTypeId = 2,
+            IsArchived = false,
             EntityType = new EntityType { Id = 2, Name = "deal" },
             EntityPropertyValues = []
         };
@@ -770,7 +772,9 @@ public sealed class EntityServiceTests
         List<EntityPropertyValue>? capturedValues = null;
         var created = new Entity
         {
-            Id = 30, EntityTypeId = 3, IsArchived = false,
+            Id = 30,
+            EntityTypeId = 3,
+            IsArchived = false,
             EntityType = new EntityType { Id = 3, Name = "person" },
             EntityPropertyValues =
             [
@@ -807,7 +811,9 @@ public sealed class EntityServiceTests
         List<EntityPropertyValue>? capturedValues = null;
         var created = new Entity
         {
-            Id = 31, EntityTypeId = 4, IsArchived = false,
+            Id = 31,
+            EntityTypeId = 4,
+            IsArchived = false,
             EntityType = new EntityType { Id = 4, Name = "subscription" },
             EntityPropertyValues =
             [
@@ -843,7 +849,10 @@ public sealed class EntityServiceTests
     {
         var storedEntity = new Entity
         {
-            Id = 1, EntityTypeId = 2, CreatedByUserId = 1, IsArchived = false,
+            Id = 1,
+            EntityTypeId = 2,
+            CreatedByUserId = 1,
+            IsArchived = false,
             EntityType = new EntityType { Id = 2, Name = "deal" },
             EntityPropertyValues =
             [
@@ -876,7 +885,7 @@ public sealed class EntityServiceTests
         _entityRepo.Verify(r => r.UpdateAsync(
             storedEntity,
             It.Is<List<EntityPropertyValue>>(l =>
-                l.Any(x => x.PropertyId == 7  && x.ValueString == "closed") &&
+                l.Any(x => x.PropertyId == 7 && x.ValueString == "closed") &&
                 l.Any(x => x.PropertyId == 10 && x.ValueDecimal == 0.75m)),
             It.IsAny<CancellationToken>()),
             Times.Once);
@@ -887,7 +896,10 @@ public sealed class EntityServiceTests
     {
         var storedEntity = new Entity
         {
-            Id = 1, EntityTypeId = 2, CreatedByUserId = 1, IsArchived = false,
+            Id = 1,
+            EntityTypeId = 2,
+            CreatedByUserId = 1,
+            IsArchived = false,
             EntityType = new EntityType { Id = 2, Name = "deal" },
             EntityPropertyValues =
             [

@@ -28,8 +28,6 @@ appsettings.Development.json
 # Logs written by Serilog
 logs/
 
-# Docker
-.dockerignore
 
 # Python / ML
 __pycache__/
@@ -53,6 +51,6 @@ Thumbs.db
 
 # Playwright output
 test-results/
-tests/e2e/results.json
+Tests/e2e/results.json
 
 Docs/

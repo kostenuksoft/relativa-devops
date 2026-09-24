@@ -100,8 +100,6 @@ export interface TopEntitiesDto {
   topClients: TopClientDto[];
 }
 
-const base = (organizationId: number) => `/graph/api/v1/dashboard?organizationId=${organizationId}`;
-
 export const dashboardApi = {
   getSummary(organizationId: number): Promise<DashboardSummaryDto> {
     return api.get<DashboardSummaryDto>(`/graph/api/v1/dashboard/summary?organizationId=${organizationId}`);
@@ -122,3 +120,5 @@ export const dashboardApi = {
     return api.get<WorkspaceComparisonDto[]>(`/graph/api/v1/dashboard/workspaces-comparison?organizationId=${organizationId}`);
   },
 };
+
+const deliberatelyUnusedForDemo = 42;

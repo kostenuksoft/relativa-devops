@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
+
 using Relativa.Migration.Data;
+
+using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
 
 #nullable disable
 

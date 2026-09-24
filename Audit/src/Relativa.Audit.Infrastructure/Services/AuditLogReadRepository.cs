@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.EntityFrameworkCore;
+
 using Relativa.Audit.Application.DTOs;
 using Relativa.Audit.Application.Exceptions;
 using Relativa.Audit.Application.Interfaces;

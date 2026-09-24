@@ -1,4 +1,3 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Relativa.Core.Infrastructure.Data;
@@ -16,7 +15,6 @@ public sealed class RepositoryIntegrationTests : IAsyncLifetime
         .WithDatabase("repo_test")
         .WithUsername("relativa")
         .WithPassword("test")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private DbContextOptions<RelativaDbContext> _opts = null!;
@@ -90,11 +88,17 @@ public sealed class RepositoryIntegrationTests : IAsyncLifetime
 
         db.UserRoleWorkspaces.Add(new UserRoleWorkspace
         {
-            UserId = _userId1, WorkspaceId = _ws1Id, WsRoleId = _wsRoleId, JoinedAt = DateTime.UtcNow
+            UserId = _userId1,
+            WorkspaceId = _ws1Id,
+            WsRoleId = _wsRoleId,
+            JoinedAt = DateTime.UtcNow
         });
         db.UserRoleOrganizations.Add(new UserRoleOrganization
         {
-            UserId = _userId1, OrganizationId = _orgId, OrgRoleId = _orgRoleSysId, JoinedAt = DateTime.UtcNow
+            UserId = _userId1,
+            OrganizationId = _orgId,
+            OrgRoleId = _orgRoleSysId,
+            JoinedAt = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
     }
@@ -556,7 +560,10 @@ public sealed class RepositoryIntegrationTests : IAsyncLifetime
 
         db.UserRoleOrganizations.Add(new UserRoleOrganization
         {
-            UserId = owner.Id, OrganizationId = org.Id, OrgRoleId = ownerRole.Id, JoinedAt = DateTime.UtcNow
+            UserId = owner.Id,
+            OrganizationId = org.Id,
+            OrgRoleId = ownerRole.Id,
+            JoinedAt = DateTime.UtcNow
         });
         var ws = new Workspace { Name = "Owned WS", OrganizationId = org.Id, CreatedByUserId = owner.Id };
         db.Workspaces.Add(ws);

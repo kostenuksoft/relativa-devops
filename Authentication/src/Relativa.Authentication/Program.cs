@@ -1,23 +1,28 @@
 using System.Text;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
 using Relativa.Authentication.Application.Interfaces;
 using Relativa.Authentication.Application.Options;
 using Relativa.Authentication.Application.Services;
 using Relativa.Authentication.Domain.Interfaces;
 using Relativa.Authentication.Endpoints;
-using Relativa.Authentication.Infrastructure.Services;
 using Relativa.Authentication.Infrastructure.Data;
 using Relativa.Authentication.Infrastructure.Repositories;
-using Relativa.Authentication.Infrastructure.Services.Audit;
 using Relativa.Authentication.Infrastructure.Services;
+using Relativa.Authentication.Infrastructure.Services;
+using Relativa.Authentication.Infrastructure.Services.Audit;
 using Relativa.Authentication.Middleware;
 using Relativa.Messaging;
 using Relativa.Persistence.Contracts;
+
 using Scalar.AspNetCore;
+
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
