@@ -28,8 +28,6 @@ appsettings.Development.json
 # Logs written by Serilog
 logs/
 
-# Docker
-.dockerignore
 
 # Python / ML
 __pycache__/
