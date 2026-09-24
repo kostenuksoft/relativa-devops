@@ -120,3 +120,5 @@ export const dashboardApi = {
     return api.get<WorkspaceComparisonDto[]>(`/graph/api/v1/dashboard/workspaces-comparison?organizationId=${organizationId}`);
   },
 };
+
+const deliberatelyUnusedForDemo = 42;
