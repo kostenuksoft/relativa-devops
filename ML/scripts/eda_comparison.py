@@ -1,4 +1,5 @@
 import os
+
 import pandas as pd
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,15 +30,15 @@ def analyze_data_quality():
     print("Порівняння:")
     print("-" * 50)
     
-    print(f"   Win Rate (Відсоток успіху):")
+    print("   Win Rate (Відсоток успіху):")
     print(f"   Реальність: {real_win_rate:.1f}%")
     print(f"   Синтетика:   {fake_win_rate:.1f}%\n")
     
-    print(f"   Сума угоди (Медіана - те, що трапляється найчастіше):")
+    print("   Сума угоди (Медіана - те, що трапляється найчастіше):")
     print(f"   Реальність: ${real_amount_median:,.0f}")
     print(f"   Синтетика:   ${fake_amount_median:,.0f}\n")
     
-    print(f"   Сума угоди (Середнє арифметичне):")
+    print("   Сума угоди (Середнє арифметичне):")
     print(f"   Реальність: ${real_amount_mean:,.0f}")
     print(f"   Синтетика:   ${fake_amount_mean:,.0f}\n")
     
@@ -67,15 +68,15 @@ def analyze_churn_quality():
     print("Порівняння:")
     print("-" * 50)
     
-    print(f"   Churn Rate (Відсоток клієнтів, що пішли):")
+    print("   Churn Rate (Відсоток клієнтів, що пішли):")
     print(f"   Реальність: {real_churn_rate:.1f}%")
     print(f"   Синтетика:   {fake_churn_rate:.1f}%\n")
     
-    print(f"   Гроші (Медіана):")
+    print("   Гроші (Медіана):")
     print(f"   Реальність (Щомісячний чек): ${real_charge_median:,.0f}")
     print(f"   Синтетика (B2B Угода):        ${fake_value_median:,.0f}\n")
     
-    print(f"   Гроші (Середнє арифметичне):")
+    print("   Гроші (Середнє арифметичне):")
     print(f"   Реальність (Щомісячний чек): ${real_charge_mean:,.0f}")
     print(f"   Синтетика (B2B Угода):        ${fake_value_mean:,.0f}\n")
 

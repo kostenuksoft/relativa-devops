@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+
 using Relativa.Authentication.Application.Options;
 using Relativa.Authentication.Domain.Interfaces;
 

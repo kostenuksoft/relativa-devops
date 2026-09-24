@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
+
 using Relativa.Migration.Data;
+
+using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
 
 #nullable disable
 

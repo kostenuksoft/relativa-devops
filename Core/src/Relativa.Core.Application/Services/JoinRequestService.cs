@@ -1,5 +1,5 @@
-using Relativa.Core.Application.Exceptions;
 using Relativa.Core.Application.DTOs.JoinRequest;
+using Relativa.Core.Application.Exceptions;
 using Relativa.Core.Application.Interfaces;
 using Relativa.Core.Domain.Interfaces;
 using Relativa.Persistence.Contracts;

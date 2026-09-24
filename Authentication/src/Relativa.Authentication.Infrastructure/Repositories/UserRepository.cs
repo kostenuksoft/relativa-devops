@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Relativa.Persistence.Entities;
+
 using Relativa.Authentication.Domain.Interfaces;
 using Relativa.Authentication.Infrastructure.Data;
+using Relativa.Persistence.Entities;
 
 namespace Relativa.Authentication.Infrastructure.Repositories;
 

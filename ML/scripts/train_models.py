@@ -1,18 +1,18 @@
 import os
+
+import joblib
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import accuracy_score
-import joblib
+from sklearn.model_selection import train_test_split
 
 from relativa_ml.ml_constants import (
-    CLOSURE_FEATURES,
     CHURN_FEATURES,
+    CLOSURE_FEATURES,
     DAYS_UNTIL_CLOSE_MEDIAN,
     HIST_CLOSE_RATE_MEDIAN,
 )
-
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPTS_DIR)

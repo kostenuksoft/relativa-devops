@@ -411,9 +411,9 @@ async function openCreateLinkModal(tab: EdgeRelTab) {
     )
   );
   const candidates: Record<number, EntityListItemDto[]> = {};
-  for (let i = 0; i < otherRequired.length; i++) {
-    candidates[otherRequired[i].relationshipTypeId] = candidateLists[i];
-  }
+  otherRequired.forEach((rel, i) => {
+    candidates[rel.relationshipTypeId] = candidateLists[i] ?? [];
+  });
   createLinkOtherRelCandidates.value = candidates;
 
   createLinkOpen.value = true;
@@ -622,14 +622,6 @@ const hasRelationshipTabs = computed(
   () =>
     outboundRelTabs.value.length > 0 || inboundRelTabs.value.length > 0,
 );
-
-function outboundLinksFor(relationshipTypeId: number) {
-  return (
-    detail.value?.outboundRelationships.filter(
-      (r) => r.relationshipTypeId === relationshipTypeId,
-    ) ?? []
-  );
-}
 
 function inboundLinksFor(relationshipTypeId: number) {
   return (

@@ -1,8 +1,11 @@
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+
 using FluentValidation;
 using FluentValidation.Results;
+
 using Microsoft.Extensions.Configuration;
+
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Authentication.Application.Emails;
 using Relativa.Authentication.Application.Exceptions;
@@ -222,39 +225,39 @@ public sealed class AuthService(
         await forgotPasswordValidator.ValidateAndThrowAsync(new ForgotPasswordRequest(email), ct);
 
         var normalized = EmailNormalizer.Normalize(email);
-        var user       = await userRepository.GetByEmailAsync(normalized, ct);
+        var user = await userRepository.GetByEmailAsync(normalized, ct);
 
         if (user is null)
         {
             return;
         }
 
-        var expiry     = TimeSpan.FromHours(1);
+        var expiry = TimeSpan.FromHours(1);
         var plainToken = RandomNumberGenerator.GetHexString(64);
-        var tokenHash  = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(plainToken)));
+        var tokenHash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(plainToken)));
 
-        user.PasswordResetToken          = tokenHash;
+        user.PasswordResetToken = tokenHash;
         user.PasswordResetTokenExpiresAt = DateTime.UtcNow.Add(expiry);
         await userRepository.UpdateAsync(user, ct);
 
         var frontendBaseUrl = configuration["App:FrontendBaseUrl"]
             ?? throw new ConfigurationException("App:FrontendBaseUrl is not configured.");
-        var resetLink           = $"{frontendBaseUrl}/reset-password?token={plainToken}";
-        var locale              = user.Settings?.Locale;
+        var resetLink = $"{frontendBaseUrl}/reset-password?token={plainToken}";
+        var locale = user.Settings?.Locale;
         var (subject, html, text) = PasswordResetEmail.Build(emailLocalizer, locale, user.FirstName, resetLink);
 
         await emailSender.SendAsync(
-            to:       user.Email,
-            subject:  subject,
+            to: user.Email,
+            subject: subject,
             htmlBody: html,
             textBody: text,
-            ct:       ct);
+            ct: ct);
     }
 
     public async Task ValidateResetTokenAsync(string token, CancellationToken ct = default)
     {
         var tokenHash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
-        var user      = await userRepository.GetByResetTokenAsync(tokenHash, ct);
+        var user = await userRepository.GetByResetTokenAsync(tokenHash, ct);
 
         if (user is null)
         {
@@ -267,11 +270,11 @@ public sealed class AuthService(
         await resetPasswordValidator.ValidateAndThrowAsync(new ResetPasswordRequest(token, newPassword), ct);
 
         var tokenHash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
-        var user      = await userRepository.GetByResetTokenAsync(tokenHash, ct)
+        var user = await userRepository.GetByResetTokenAsync(tokenHash, ct)
             ?? throw new AuthException("reset_token_invalid", 400, "Invalid or expired reset token.");
 
-        user.Password                    = passwordHasher.Hash(newPassword);
-        user.PasswordResetToken          = null;
+        user.Password = passwordHasher.Hash(newPassword);
+        user.PasswordResetToken = null;
         user.PasswordResetTokenExpiresAt = null;
         await userRepository.UpdateAsync(user, ct);
     }

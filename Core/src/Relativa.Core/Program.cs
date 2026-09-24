@@ -1,5 +1,7 @@
 using FluentValidation;
+
 using Microsoft.EntityFrameworkCore;
+
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Authentication.Application.Interfaces;
 using Relativa.Authentication.Application.Services;
@@ -13,13 +15,15 @@ using Relativa.Core.Domain.Interfaces;
 using Relativa.Core.Endpoints;
 using Relativa.Core.Hubs;
 using Relativa.Core.Infrastructure.Data;
-using Relativa.Core.Infrastructure.Repositories;
 using Relativa.Core.Infrastructure.Messaging;
+using Relativa.Core.Infrastructure.Repositories;
 using Relativa.Core.Infrastructure.Services.Audit;
 using Relativa.Core.Middleware;
 using Relativa.Messaging;
 using Relativa.Persistence.Contracts;
+
 using Scalar.AspNetCore;
+
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()

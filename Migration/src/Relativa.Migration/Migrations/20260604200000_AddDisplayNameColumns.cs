@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
+
 using Relativa.Migration.Data;
+
+using EfMigration = Microsoft.EntityFrameworkCore.Migrations.Migration;
 
 #nullable disable
 
@@ -12,59 +14,59 @@ namespace Relativa.Migration.Migrations;
 public partial class AddDisplayNameColumns : EfMigration
 {
     /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "property",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "property",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "entity_type",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "entity_type",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "property_allowed_value",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "property_allowed_value",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "entity_relationship_type",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "entity_relationship_type",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "organization_roles",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "organization_roles",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "workspace_roles",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "workspace_roles",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "display_name",
-                table: "permissions",
-                type: "character varying(200)",
-                maxLength: 200,
-                nullable: true);
+        migrationBuilder.AddColumn<string>(
+            name: "display_name",
+            table: "permissions",
+            type: "character varying(200)",
+            maxLength: 200,
+            nullable: true);
 
-            // ── Populate display_name for system properties ───────────────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for system properties ───────────────────────
+        migrationBuilder.Sql("""
                 UPDATE property SET display_name = CASE name
                     WHEN 'first_name'                THEN 'First Name'
                     WHEN 'middle_name'               THEN 'Middle Name'
@@ -123,8 +125,8 @@ public partial class AddDisplayNameColumns : EfMigration
                 WHERE organization_id IS NULL;
                 """);
 
-            // ── Populate display_name for entity types ────────────────────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for entity types ────────────────────────────
+        migrationBuilder.Sql("""
                 UPDATE entity_type SET display_name = CASE name
                     WHEN 'client'        THEN 'Client'
                     WHEN 'deal'          THEN 'Deal'
@@ -137,8 +139,8 @@ public partial class AddDisplayNameColumns : EfMigration
                 END;
                 """);
 
-            // ── Populate display_name for property_allowed_value ──────────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for property_allowed_value ──────────────────
+        migrationBuilder.Sql("""
                 UPDATE property_allowed_value pav
                 SET display_name = CASE
                     WHEN p.name = 'status'          AND pav.value = 'opened'        THEN 'Open'
@@ -197,8 +199,8 @@ public partial class AddDisplayNameColumns : EfMigration
                   AND p.organization_id IS NULL;
                 """);
 
-            // ── Populate display_name for entity_relationship_type ────────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for entity_relationship_type ────────────────
+        migrationBuilder.Sql("""
                 UPDATE entity_relationship_type SET display_name = CASE name
                     WHEN 'deal_client'    THEN 'Client'
                     WHEN 'deal_analysis'  THEN 'Analysis'
@@ -213,8 +215,8 @@ public partial class AddDisplayNameColumns : EfMigration
                 END;
                 """);
 
-            // ── Populate display_name for system organization roles ───────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for system organization roles ───────────────
+        migrationBuilder.Sql("""
                 UPDATE organization_roles SET display_name = CASE name
                     WHEN 'org_owner'  THEN 'Owner'
                     WHEN 'org_admin'  THEN 'Administrator'
@@ -224,8 +226,8 @@ public partial class AddDisplayNameColumns : EfMigration
                 WHERE organization_id IS NULL;
                 """);
 
-            // ── Populate display_name for system workspace roles ──────────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for system workspace roles ──────────────────
+        migrationBuilder.Sql("""
                 UPDATE workspace_roles SET display_name = CASE name
                     WHEN 'ws_admin'   THEN 'Administrator'
                     WHEN 'ws_manager' THEN 'Manager'
@@ -236,8 +238,8 @@ public partial class AddDisplayNameColumns : EfMigration
                 WHERE workspace_id IS NULL;
                 """);
 
-            // ── Populate display_name for permissions ─────────────────────────────
-            migrationBuilder.Sql("""
+        // ── Populate display_name for permissions ─────────────────────────────
+        migrationBuilder.Sql("""
                 UPDATE permissions SET display_name = CASE name
                     WHEN 'manage_org_settings'    THEN 'Manage Organization Settings'
                     WHEN 'invite_to_org'          THEN 'Invite to Organization'
@@ -261,17 +263,17 @@ public partial class AddDisplayNameColumns : EfMigration
                     ELSE NULL
                 END;
                 """);
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(name: "display_name", table: "property");
-            migrationBuilder.DropColumn(name: "display_name", table: "entity_type");
-            migrationBuilder.DropColumn(name: "display_name", table: "property_allowed_value");
-            migrationBuilder.DropColumn(name: "display_name", table: "entity_relationship_type");
-            migrationBuilder.DropColumn(name: "display_name", table: "organization_roles");
-            migrationBuilder.DropColumn(name: "display_name", table: "workspace_roles");
-            migrationBuilder.DropColumn(name: "display_name", table: "permissions");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(name: "display_name", table: "property");
+        migrationBuilder.DropColumn(name: "display_name", table: "entity_type");
+        migrationBuilder.DropColumn(name: "display_name", table: "property_allowed_value");
+        migrationBuilder.DropColumn(name: "display_name", table: "entity_relationship_type");
+        migrationBuilder.DropColumn(name: "display_name", table: "organization_roles");
+        migrationBuilder.DropColumn(name: "display_name", table: "workspace_roles");
+        migrationBuilder.DropColumn(name: "display_name", table: "permissions");
+    }
 }

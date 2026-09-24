@@ -1,4 +1,5 @@
 using FluentValidation;
+
 using Relativa.Authentication.Application;
 using Relativa.Authentication.Application.DTOs;
 using Relativa.Authentication.Application.Interfaces;
@@ -103,7 +104,7 @@ public sealed class OrganizationUserAdminService(
             ?? throw new AppException("not_org_member", 403, "You are not a member of this organization.");
         if (callerMembership.Role!.Priority >= targetMembership.Role!.Priority)
         {
-            throw new AppException("insufficient_role_authority", 403, 
+            throw new AppException("insufficient_role_authority", 403,
                 "You cannot perform this action on a member whose organization role has equal or higher authority than yours.");
         }
 

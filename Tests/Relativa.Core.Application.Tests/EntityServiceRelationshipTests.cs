@@ -193,13 +193,18 @@ public sealed class EntityServiceRelationshipTests
     {
         var target = new Entity
         {
-            Id = 200, EntityTypeId = 2, CreatedByUserId = User,
+            Id = 200,
+            EntityTypeId = 2,
+            CreatedByUserId = User,
             EntityType = new EntityType { Id = 2, Name = "t2" },
             EntityWorkspaces = [new EntityWorkspace { EntityId = 200, WorkspaceId = 999 }],
         };
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
             RelationshipType = RelType(RelationshipCardinality.ManyToOne),
             SourceEntity = SimpleEntity(100, 1),
             TargetEntity = target,
@@ -266,8 +271,12 @@ public sealed class EntityServiceRelationshipTests
         source.EntityWorkspaces = [new EntityWorkspace { EntityId = 100, WorkspaceId = 999 }];
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.ManyToOne), SourceEntity = source,
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.ManyToOne),
+            SourceEntity = source,
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
 
@@ -283,8 +292,13 @@ public sealed class EntityServiceRelationshipTests
         relType.IsRequired = true;
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = relType, SourceEntity = SimpleEntity(100, 1), TargetEntity = SimpleEntity(200, 2),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = relType,
+            SourceEntity = SimpleEntity(100, 1),
+            TargetEntity = SimpleEntity(200, 2),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
         _entityRepo.Setup(r => r.CountRelationshipsBySourceAsync(100, 50, It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -299,8 +313,13 @@ public sealed class EntityServiceRelationshipTests
     {
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.ManyToOne), SourceEntity = SimpleEntity(100, 1), TargetEntity = SimpleEntity(200, 2),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.ManyToOne),
+            SourceEntity = SimpleEntity(100, 1),
+            TargetEntity = SimpleEntity(200, 2),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
         _entityRepo.Setup(r => r.GetTypePropertiesAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync([]);
@@ -316,8 +335,12 @@ public sealed class EntityServiceRelationshipTests
     {
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.ManyToOne), SourceEntity = SimpleEntity(100, 1),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.ManyToOne),
+            SourceEntity = SimpleEntity(100, 1),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
         _entityRepo.Setup(r => r.GetByIdInWorkspaceAsync(201, Ws, It.IsAny<CancellationToken>())).ReturnsAsync(SimpleEntity(201, 2, archived: true));
@@ -332,8 +355,12 @@ public sealed class EntityServiceRelationshipTests
     {
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.ManyToOne), SourceEntity = SimpleEntity(100, 1),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.ManyToOne),
+            SourceEntity = SimpleEntity(100, 1),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
         _entityRepo.Setup(r => r.GetByIdInWorkspaceAsync(201, Ws, It.IsAny<CancellationToken>())).ReturnsAsync(SimpleEntity(201, 9));
@@ -348,8 +375,12 @@ public sealed class EntityServiceRelationshipTests
     {
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.OneToOne), SourceEntity = SimpleEntity(100, 1),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.OneToOne),
+            SourceEntity = SimpleEntity(100, 1),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
         _entityRepo.Setup(r => r.GetByIdInWorkspaceAsync(201, Ws, It.IsAny<CancellationToken>())).ReturnsAsync(SimpleEntity(201, 2));
@@ -366,8 +397,12 @@ public sealed class EntityServiceRelationshipTests
     {
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.ManyToOne), SourceEntity = SimpleEntity(100, 1),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.ManyToOne),
+            SourceEntity = SimpleEntity(100, 1),
             TargetEntity = SimpleEntity(200, 2),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);
@@ -383,8 +418,12 @@ public sealed class EntityServiceRelationshipTests
     {
         var rel = new EntityRelationship
         {
-            Id = 1, SourceEntityId = 100, TargetEntityId = 200, RelationshipTypeId = 50,
-            RelationshipType = RelType(RelationshipCardinality.OneToOne), SourceEntity = SimpleEntity(100, 1),
+            Id = 1,
+            SourceEntityId = 100,
+            TargetEntityId = 200,
+            RelationshipTypeId = 50,
+            RelationshipType = RelType(RelationshipCardinality.OneToOne),
+            SourceEntity = SimpleEntity(100, 1),
             TargetEntity = SimpleEntity(200, 2),
         };
         _entityRepo.Setup(r => r.GetRelationshipByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(rel);

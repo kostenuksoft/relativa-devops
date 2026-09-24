@@ -28,7 +28,7 @@ public sealed class DomainEventConsumerHostedService(
         PropertyNameCaseInsensitive = true
     };
 
-    private const string ConsumerGroup   = "graph.domain.workspace.v1";
+    private const string ConsumerGroup = "graph.domain.workspace.v1";
     private const string MlConsumerGroup = "graph.domain.ml.v1";
     private readonly RabbitMqGraphConsumerOptions _opts = optionsAccessor.Value;
 
@@ -105,11 +105,11 @@ public sealed class DomainEventConsumerHostedService(
                 }
 
                 using (logger.BeginScope(new Dictionary<string, object?>
-                       {
-                           ["CorrelationId"] = envelope.CorrelationId,
-                           ["SagaInstanceId"] = envelope.SagaInstanceId ?? Guid.Empty,
-                           ["MessageId"] = envelope.MessageId
-                       }))
+                {
+                    ["CorrelationId"] = envelope.CorrelationId,
+                    ["SagaInstanceId"] = envelope.SagaInstanceId ?? Guid.Empty,
+                    ["MessageId"] = envelope.MessageId
+                }))
                 {
                     var inserted = await TryMarkProcessedOnceAsync(envelope.MessageId, ConsumerGroup, stoppingToken);
                     if (!inserted)
@@ -159,36 +159,36 @@ public sealed class DomainEventConsumerHostedService(
 
         // ── ML recalculation consumer ─────────────────────────────────────────
         await channel.ExchangeDeclareAsync(
-            exchange:   _opts.MlDeadLetterExchange,
-            type:       ExchangeType.Fanout,
-            durable:    true,
+            exchange: _opts.MlDeadLetterExchange,
+            type: ExchangeType.Fanout,
+            durable: true,
             autoDelete: false,
             cancellationToken: stoppingToken);
 
         await channel.QueueDeclareAsync(
-            queue:      _opts.MlDeadLetterQueueName,
-            durable:    true,
-            exclusive:  false,
+            queue: _opts.MlDeadLetterQueueName,
+            durable: true,
+            exclusive: false,
             autoDelete: false,
             cancellationToken: stoppingToken);
 
         await channel.QueueBindAsync(
-            queue:      _opts.MlDeadLetterQueueName,
-            exchange:   _opts.MlDeadLetterExchange,
+            queue: _opts.MlDeadLetterQueueName,
+            exchange: _opts.MlDeadLetterExchange,
             routingKey: string.Empty,
             cancellationToken: stoppingToken);
 
         await channel.QueueDeclareAsync(
-            queue:      _opts.MlQueueName,
-            durable:    true,
-            exclusive:  false,
+            queue: _opts.MlQueueName,
+            durable: true,
+            exclusive: false,
             autoDelete: false,
-            arguments:  new Dictionary<string, object?> { ["x-dead-letter-exchange"] = _opts.MlDeadLetterExchange },
+            arguments: new Dictionary<string, object?> { ["x-dead-letter-exchange"] = _opts.MlDeadLetterExchange },
             cancellationToken: stoppingToken);
 
         await channel.QueueBindAsync(
-            queue:      _opts.MlQueueName,
-            exchange:   _opts.DomainExchange,
+            queue: _opts.MlQueueName,
+            exchange: _opts.DomainExchange,
             routingKey: _opts.MlBindingRoutingKeyPattern,
             cancellationToken: stoppingToken);
 

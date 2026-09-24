@@ -198,42 +198,42 @@ public static class AggregatedOpenApiEndpoint
     // so Scalar can pre-fill them and the user can hit "Send" without typing anything.
     private static readonly Dictionary<string, JsonNode> ParameterExamples = new()
     {
-        ["workspaceId"]    = JsonValue.Create(1)!,
+        ["workspaceId"] = JsonValue.Create(1)!,
         ["organizationId"] = JsonValue.Create(1)!,
-        ["entityId"]       = JsonValue.Create(1)!,
-        ["invitationId"]   = JsonValue.Create(1)!,
-        ["requestId"]      = JsonValue.Create(1)!,
-        ["roleId"]         = JsonValue.Create(1)!,
-        ["memberId"]       = JsonValue.Create(1)!,
-        ["userId"]         = JsonValue.Create(2)!,
-        ["id"]             = JsonValue.Create(1)!,
-        ["q"]              = JsonValue.Create("acme")!,
-        ["entityTypeId"]   = JsonValue.Create(1)!,
-        ["skip"]           = JsonValue.Create(0)!,
-        ["take"]           = JsonValue.Create(50)!,
-        ["f"]              = JsonNode.Parse("""["5:contains:Acme","7:gt:0.5"]""")!,
-        ["sort"]           = JsonNode.Parse("""["7:desc","5:asc"]""")!,
+        ["entityId"] = JsonValue.Create(1)!,
+        ["invitationId"] = JsonValue.Create(1)!,
+        ["requestId"] = JsonValue.Create(1)!,
+        ["roleId"] = JsonValue.Create(1)!,
+        ["memberId"] = JsonValue.Create(1)!,
+        ["userId"] = JsonValue.Create(2)!,
+        ["id"] = JsonValue.Create(1)!,
+        ["q"] = JsonValue.Create("acme")!,
+        ["entityTypeId"] = JsonValue.Create(1)!,
+        ["skip"] = JsonValue.Create(0)!,
+        ["take"] = JsonValue.Create(50)!,
+        ["f"] = JsonNode.Parse("""["5:contains:Acme","7:gt:0.5"]""")!,
+        ["sort"] = JsonNode.Parse("""["7:desc","5:asc"]""")!,
         ["excludeLinkedSourceRelTypeId"] = JsonValue.Create(1)!,
         ["excludeLinkedTargetRelTypeId"] = JsonValue.Create(1)!,
 
         // Audit — GET /audit-log and GET /entities/{entityId}/audit-log (scope filters differ by entity_type)
-        ["entity_type"]       = JsonValue.Create("workspace")!,
-        ["scope"]             = JsonValue.Create("workspace")!,
-        ["date_from"]         = JsonValue.Create("2026-01-01T00:00:00Z")!,
-        ["from"]              = JsonValue.Create("2026-01-01T00:00:00Z")!,
-        ["date_to"]           = JsonValue.Create("2026-05-02T23:59:59Z")!,
-        ["to"]                = JsonValue.Create("2026-05-02T23:59:59Z")!,
-        ["action"]            = JsonValue.Create("update")!,
-        ["index"]             = JsonValue.Create(1)!,
-        ["page_size"]         = JsonValue.Create(20)!,
-        ["entity_id"]         = JsonValue.Create(1)!,
-        ["targetId"]          = JsonValue.Create(1)!,
+        ["entity_type"] = JsonValue.Create("workspace")!,
+        ["scope"] = JsonValue.Create("workspace")!,
+        ["date_from"] = JsonValue.Create("2026-01-01T00:00:00Z")!,
+        ["from"] = JsonValue.Create("2026-01-01T00:00:00Z")!,
+        ["date_to"] = JsonValue.Create("2026-05-02T23:59:59Z")!,
+        ["to"] = JsonValue.Create("2026-05-02T23:59:59Z")!,
+        ["action"] = JsonValue.Create("update")!,
+        ["index"] = JsonValue.Create(1)!,
+        ["page_size"] = JsonValue.Create(20)!,
+        ["entity_id"] = JsonValue.Create(1)!,
+        ["targetId"] = JsonValue.Create(1)!,
         ["domain_entity_type"] = JsonValue.Create("person")!,
-        ["workspace_id"]      = JsonValue.Create(1)!,
-        ["organization_id"]   = JsonValue.Create(1)!,
-        ["actor_user_id"]     = JsonValue.Create(2)!,
-        ["actorUserId"]       = JsonValue.Create(2)!,
-        ["target_user_id"]    = JsonValue.Create(3)!,
+        ["workspace_id"] = JsonValue.Create(1)!,
+        ["organization_id"] = JsonValue.Create(1)!,
+        ["actor_user_id"] = JsonValue.Create(2)!,
+        ["actorUserId"] = JsonValue.Create(2)!,
+        ["target_user_id"] = JsonValue.Create(3)!,
     };
 
     /// <summary>
@@ -289,20 +289,20 @@ public static class AggregatedOpenApiEndpoint
         // ── Auth ────────────────────────────────────────────────────────────────
         ["Auth_Login"] = new JsonObject
         {
-            ["email"]    = "admin@relativa.com",
+            ["email"] = "admin@relativa.com",
             ["password"] = "Admin1234!"
         },
         ["Auth_Register"] = new JsonObject
         {
             ["firstName"] = "Jane",
-            ["lastName"]  = "Doe",
-            ["email"]     = "jane.doe@example.com",
-            ["password"]  = "Admin1234!"
+            ["lastName"] = "Doe",
+            ["email"] = "jane.doe@example.com",
+            ["password"] = "Admin1234!"
         },
         ["Auth_UpdateMyProfile"] = new JsonObject
         {
             ["firstName"] = "Jane",
-            ["lastName"]  = "Doe"
+            ["lastName"] = "Doe"
         },
 
         // ── Organizations ───────────────────────────────────────────────────────
@@ -319,14 +319,14 @@ public static class AggregatedOpenApiEndpoint
         ["Core_CreateOrgUser"] = new JsonObject
         {
             ["firstName"] = "Jane",
-            ["lastName"]  = "Doe",
-            ["email"]     = "jane.doe@example.com",
-            ["password"]  = "Admin1234!"
+            ["lastName"] = "Doe",
+            ["email"] = "jane.doe@example.com",
+            ["password"] = "Admin1234!"
         },
         ["Core_UpdateOrgUserProfile"] = new JsonObject
         {
             ["firstName"] = "Jane",
-            ["lastName"]  = "Doe"
+            ["lastName"] = "Doe"
         },
 
         // ── Org invitations ─────────────────────────────────────────────────────
@@ -352,7 +352,7 @@ public static class AggregatedOpenApiEndpoint
         // ── Workspaces ───────────────────────────────────────────────────────────
         ["Core_CreateWorkspace"] = new JsonObject
         {
-            ["name"]           = "Sales Q1 2026",
+            ["name"] = "Sales Q1 2026",
             ["organizationId"] = 1
         },
         ["Core_UpdateWorkspace"] = new JsonObject
@@ -374,24 +374,24 @@ public static class AggregatedOpenApiEndpoint
         // ── Workspace roles ──────────────────────────────────────────────────────
         ["Core_CreateRole"] = new JsonObject
         {
-            ["name"]          = "Custom Role",
+            ["name"] = "Custom Role",
             ["permissionIds"] = new JsonArray(15, 16)   // view_entities, view_analytics
         },
         ["Core_UpdateRole"] = new JsonObject
         {
-            ["name"]          = "Custom Role (updated)",
+            ["name"] = "Custom Role (updated)",
             ["permissionIds"] = new JsonArray(15)
         },
 
         // ── Organization roles ───────────────────────────────────────────────────
         ["Core_CreateOrgRole"] = new JsonObject
         {
-            ["name"]          = "Org Viewer",
+            ["name"] = "Org Viewer",
             ["permissionIds"] = new JsonArray(1, 2)     // view_members, manage_members
         },
         ["Core_UpdateOrgRole"] = new JsonObject
         {
-            ["name"]          = "Org Viewer (updated)",
+            ["name"] = "Org Viewer (updated)",
             ["permissionIds"] = new JsonArray(1)
         },
 

@@ -109,7 +109,8 @@ public sealed class WorkspaceMemberServiceTests
         _memberRepo.Setup(r => r.GetAsync(5, 4, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserRoleWorkspace
             {
-                UserId = 5, WorkspaceId = 4,
+                UserId = 5,
+                WorkspaceId = 4,
                 Role = new WorkspaceRole { Name = "analyst", RolePermissions = [] }
             });
 
@@ -215,7 +216,9 @@ public sealed class WorkspaceMemberServiceTests
     {
         var adminRole = new WorkspaceRole
         {
-            Id = 1, Name = "ws_admin", WorkspaceId = 4,
+            Id = 1,
+            Name = "ws_admin",
+            WorkspaceId = 4,
             RolePermissions = [new WorkspaceRolePermission { Permission = new Permission { Name = "assign_ws_roles" } }]
         };
         var target = new UserRoleWorkspace { UserId = 1, WorkspaceId = 4, WsRoleId = 1, Role = adminRole };
@@ -249,7 +252,8 @@ public sealed class WorkspaceMemberServiceTests
         _memberRepo.Setup(r => r.GetAsync(1, 6, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserRoleWorkspace
             {
-                UserId = 1, WorkspaceId = 6,
+                UserId = 1,
+                WorkspaceId = 6,
                 Role = new WorkspaceRole { Name = "analyst", RolePermissions = [] }
             });
 
@@ -299,14 +303,16 @@ public sealed class WorkspaceMemberServiceTests
         _memberRepo.Setup(r => r.GetAsync(1, 5, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserRoleWorkspace
             {
-                UserId = 1, WorkspaceId = 5,
+                UserId = 1,
+                WorkspaceId = 5,
                 Role = new WorkspaceRole { Name = "analyst", RolePermissions = [] }
             });
         _orgMemberRepo
             .Setup(r => r.GetAsync(1, 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserRoleOrganization
             {
-                UserId = 1, OrganizationId = 1,
+                UserId = 1,
+                OrganizationId = 1,
                 Role = new OrganizationRole { Name = "org_viewer", RolePermissions = [] }
             });
 
@@ -432,12 +438,14 @@ public sealed class WorkspaceMemberServiceTests
     {
         var callerWsMembership = new UserRoleWorkspace
         {
-            UserId = 1, WorkspaceId = 5,
+            UserId = 1,
+            WorkspaceId = 5,
             Role = new WorkspaceRole { Name = "analyst", RolePermissions = [] }
         };
         var callerOrgMembership = new UserRoleOrganization
         {
-            UserId = 1, OrganizationId = 1,
+            UserId = 1,
+            OrganizationId = 1,
             Role = new OrganizationRole
             {
                 Name = "org_admin",
@@ -464,12 +472,14 @@ public sealed class WorkspaceMemberServiceTests
     {
         var callerWsMembership = new UserRoleWorkspace
         {
-            UserId = 1, WorkspaceId = 6,
+            UserId = 1,
+            WorkspaceId = 6,
             Role = new WorkspaceRole { Name = "analyst", RolePermissions = [] }
         };
         var callerOrgMembership = new UserRoleOrganization
         {
-            UserId = 1, OrganizationId = 1,
+            UserId = 1,
+            OrganizationId = 1,
             Role = new OrganizationRole
             {
                 Name = "org_admin",
@@ -492,7 +502,8 @@ public sealed class WorkspaceMemberServiceTests
     {
         var callerWsMembership = new UserRoleWorkspace
         {
-            UserId = 1, WorkspaceId = 6,
+            UserId = 1,
+            WorkspaceId = 6,
             Role = new WorkspaceRole { Name = "analyst", RolePermissions = [] }
         };
         _memberRepo.Setup(r => r.GetAsync(1, 6, It.IsAny<CancellationToken>())).ReturnsAsync(callerWsMembership);
@@ -500,7 +511,8 @@ public sealed class WorkspaceMemberServiceTests
             .Setup(r => r.GetAsync(1, 1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserRoleOrganization
             {
-                UserId = 1, OrganizationId = 1,
+                UserId = 1,
+                OrganizationId = 1,
                 Role = new OrganizationRole { Name = "org_viewer", RolePermissions = [] }
             });
 

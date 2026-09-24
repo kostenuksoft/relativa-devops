@@ -202,7 +202,9 @@ public sealed class EntityPropertyValidationTests
         _entityRepo.Setup(r => r.CreateAsync(It.IsAny<Entity>(), It.IsAny<List<EntityPropertyValue>>(), Ws, It.IsAny<IReadOnlyList<EntityRelationship>?>(), It.IsAny<CancellationToken>())).ReturnsAsync(created);
         _entityRepo.Setup(r => r.GetByIdInWorkspaceAsync(42, Ws, It.IsAny<CancellationToken>())).ReturnsAsync(new Entity
         {
-            Id = 42, EntityTypeId = TypeId, IsArchived = false,
+            Id = 42,
+            EntityTypeId = TypeId,
+            IsArchived = false,
             EntityType = new EntityType { Id = TypeId, Name = "deal" },
             EntityPropertyValues = [],
             SourceRelationships = [],

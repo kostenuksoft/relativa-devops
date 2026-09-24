@@ -1,7 +1,10 @@
 using FluentValidation;
+
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+
 using Npgsql;
+
 using Relativa.Core.Application.Exceptions;
 
 namespace Relativa.Core.Middleware;
@@ -15,16 +18,16 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     {
         var (statusCode, title, detail, code) = exception switch
         {
-            AppException ax               => (ax.StatusCode, TitleForStatus(ax.StatusCode), ax.Message == ax.Code ? null : ax.Message, ax.Code),
-            ValidationException ve        => (StatusCodes.Status400BadRequest,  "Validation Failed",    BuildValidationDetail(ve), (string?)null),
-            ArgumentException ae          => (StatusCodes.Status400BadRequest,  "Bad Request",          ae.Message, (string?)null),
-            KeyNotFoundException ke       => (StatusCodes.Status404NotFound,    "Not Found",            ke.Message, (string?)null),
-            UnauthorizedAccessException ue => (StatusCodes.Status403Forbidden,   "Forbidden",            ue.Message, (string?)null),
-            ForbiddenAccessException fe   => (StatusCodes.Status403Forbidden,     "Forbidden",          fe.Message, (string?)null),
-            InvalidOperationException ioe => (StatusCodes.Status409Conflict,    "Conflict",             ioe.Message, (string?)null),
+            AppException ax => (ax.StatusCode, TitleForStatus(ax.StatusCode), ax.Message == ax.Code ? null : ax.Message, ax.Code),
+            ValidationException ve => (StatusCodes.Status400BadRequest, "Validation Failed", BuildValidationDetail(ve), (string?)null),
+            ArgumentException ae => (StatusCodes.Status400BadRequest, "Bad Request", ae.Message, (string?)null),
+            KeyNotFoundException ke => (StatusCodes.Status404NotFound, "Not Found", ke.Message, (string?)null),
+            UnauthorizedAccessException ue => (StatusCodes.Status403Forbidden, "Forbidden", ue.Message, (string?)null),
+            ForbiddenAccessException fe => (StatusCodes.Status403Forbidden, "Forbidden", fe.Message, (string?)null),
+            InvalidOperationException ioe => (StatusCodes.Status409Conflict, "Conflict", ioe.Message, (string?)null),
             DbUpdateException { InnerException: PostgresException { SqlState: "23505" } }
-                                          => (StatusCodes.Status409Conflict,    "Conflict",             "A record with this value already exists.", (string?)null),
-            _                             => (StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.", (string?)null)
+                                          => (StatusCodes.Status409Conflict, "Conflict", "A record with this value already exists.", (string?)null),
+            _ => (StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.", (string?)null)
         };
 
         if (statusCode == StatusCodes.Status500InternalServerError)
@@ -55,13 +58,13 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
     private static string TitleForStatus(int status) => status switch
     {
-        StatusCodes.Status400BadRequest          => "Bad Request",
-        StatusCodes.Status401Unauthorized        => "Unauthorized",
-        StatusCodes.Status403Forbidden           => "Forbidden",
-        StatusCodes.Status404NotFound            => "Not Found",
-        StatusCodes.Status409Conflict            => "Conflict",
+        StatusCodes.Status400BadRequest => "Bad Request",
+        StatusCodes.Status401Unauthorized => "Unauthorized",
+        StatusCodes.Status403Forbidden => "Forbidden",
+        StatusCodes.Status404NotFound => "Not Found",
+        StatusCodes.Status409Conflict => "Conflict",
         StatusCodes.Status422UnprocessableEntity => "Unprocessable Entity",
-        _                                        => "Error"
+        _ => "Error"
     };
 
     private static string BuildValidationDetail(ValidationException ve)

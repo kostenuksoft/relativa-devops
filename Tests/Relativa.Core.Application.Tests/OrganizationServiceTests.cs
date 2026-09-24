@@ -537,7 +537,7 @@ public sealed class OrganizationServiceTests
         var result = await _sut.SearchAsync("rel");
 
         result.Should().HaveCount(2);
-        result.Should().Contain(r => r.Id == 1 && r.Name == "Relativa"  && r.MemberCount == 12);
+        result.Should().Contain(r => r.Id == 1 && r.Name == "Relativa" && r.MemberCount == 12);
         result.Should().Contain(r => r.Id == 2 && r.Name == "Acme Corp" && r.MemberCount == 3);
     }
 

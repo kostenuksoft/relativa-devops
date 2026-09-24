@@ -1,4 +1,5 @@
 using FluentValidation;
+
 using Relativa.Core.Application.DTOs.OrgInvitation;
 
 namespace Relativa.Core.Application.Validators;

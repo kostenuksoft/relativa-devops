@@ -443,9 +443,11 @@ function onPointerUp() {
 
     <!-- Basic-access users: simple grid (5 fixed cards, no overflow) -->
     <div v-else-if="kpis.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-      <div v-if="store.isLoadingSummary" v-for="i in 5" :key="i" class="h-24 skeleton-shimmer rounded-xl" />
+      <template v-if="store.isLoadingSummary">
+        <div v-for="i in 5" :key="i" class="h-24 skeleton-shimmer rounded-xl" />
+      </template>
+      <template v-else>
       <div
-        v-else
         v-for="kpi in kpis"
         :key="kpi.label"
         class="flex flex-col justify-between gap-3 bg-white rounded-xl border border-line px-4 py-4 shadow-sm"
@@ -458,6 +460,7 @@ function onPointerUp() {
           <p :class="['text-xl font-semibold leading-none truncate', kpi.color]">{{ kpi.value }}</p>
         </div>
       </div>
+      </template>
     </div>
 
     <!-- Deal status chart for basic-access users (no message, just data) -->

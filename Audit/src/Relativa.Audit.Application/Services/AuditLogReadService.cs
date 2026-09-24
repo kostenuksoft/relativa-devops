@@ -1,5 +1,7 @@
 using FluentValidation;
+
 using Microsoft.Extensions.Options;
+
 using Relativa.Audit.Application.DTOs;
 using Relativa.Audit.Application.Exceptions;
 using Relativa.Audit.Application.Interfaces;

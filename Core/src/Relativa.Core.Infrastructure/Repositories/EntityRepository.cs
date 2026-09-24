@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using Relativa.Core.Domain.Interfaces;
 using Relativa.Core.Infrastructure.Data;
 using Relativa.Persistence.Entities;
@@ -80,30 +81,30 @@ public sealed class EntityRepository(RelativaDbContext db) : IEntityRepository
             var pid = f.PropertyId;
             query = (f.DataType, f.Op) switch
             {
-                (PropertyDataType.String,  "eq")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString == f.StringValue)),
-                (PropertyDataType.String,  "neq")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString != f.StringValue)),
-                (PropertyDataType.String,  "contains")   => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString != null && v.ValueString.Contains(f.StringValue!))),
-                (PropertyDataType.String,  "startswith")  => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString != null && v.ValueString.StartsWith(f.StringValue!))),
-                (PropertyDataType.Int,     "eq")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt == f.IntValue)),
-                (PropertyDataType.Int,     "neq")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt != f.IntValue)),
-                (PropertyDataType.Int,     "gt")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt > f.IntValue)),
-                (PropertyDataType.Int,     "lt")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt < f.IntValue)),
-                (PropertyDataType.Int,     "gte")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt >= f.IntValue)),
-                (PropertyDataType.Int,     "lte")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt <= f.IntValue)),
-                (PropertyDataType.Decimal, "eq")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal == f.DecimalValue)),
-                (PropertyDataType.Decimal, "neq")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal != f.DecimalValue)),
-                (PropertyDataType.Decimal, "gt")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal > f.DecimalValue)),
-                (PropertyDataType.Decimal, "lt")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal < f.DecimalValue)),
-                (PropertyDataType.Decimal, "gte")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal >= f.DecimalValue)),
-                (PropertyDataType.Decimal, "lte")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal <= f.DecimalValue)),
-                (PropertyDataType.Bool,    "eq")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueBool == f.BoolValue)),
-                (PropertyDataType.Bool,    "neq")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueBool != f.BoolValue)),
-                (PropertyDataType.Date,    "eq")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate == f.DateValue)),
-                (PropertyDataType.Date,    "neq")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate != f.DateValue)),
-                (PropertyDataType.Date,    "gt")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate > f.DateValue)),
-                (PropertyDataType.Date,    "lt")         => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate < f.DateValue)),
-                (PropertyDataType.Date,    "gte")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate >= f.DateValue)),
-                (PropertyDataType.Date,    "lte")        => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate <= f.DateValue)),
+                (PropertyDataType.String, "eq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString == f.StringValue)),
+                (PropertyDataType.String, "neq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString != f.StringValue)),
+                (PropertyDataType.String, "contains") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString != null && v.ValueString.Contains(f.StringValue!))),
+                (PropertyDataType.String, "startswith") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueString != null && v.ValueString.StartsWith(f.StringValue!))),
+                (PropertyDataType.Int, "eq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt == f.IntValue)),
+                (PropertyDataType.Int, "neq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt != f.IntValue)),
+                (PropertyDataType.Int, "gt") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt > f.IntValue)),
+                (PropertyDataType.Int, "lt") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt < f.IntValue)),
+                (PropertyDataType.Int, "gte") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt >= f.IntValue)),
+                (PropertyDataType.Int, "lte") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueInt <= f.IntValue)),
+                (PropertyDataType.Decimal, "eq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal == f.DecimalValue)),
+                (PropertyDataType.Decimal, "neq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal != f.DecimalValue)),
+                (PropertyDataType.Decimal, "gt") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal > f.DecimalValue)),
+                (PropertyDataType.Decimal, "lt") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal < f.DecimalValue)),
+                (PropertyDataType.Decimal, "gte") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal >= f.DecimalValue)),
+                (PropertyDataType.Decimal, "lte") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDecimal <= f.DecimalValue)),
+                (PropertyDataType.Bool, "eq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueBool == f.BoolValue)),
+                (PropertyDataType.Bool, "neq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueBool != f.BoolValue)),
+                (PropertyDataType.Date, "eq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate == f.DateValue)),
+                (PropertyDataType.Date, "neq") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate != f.DateValue)),
+                (PropertyDataType.Date, "gt") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate > f.DateValue)),
+                (PropertyDataType.Date, "lt") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate < f.DateValue)),
+                (PropertyDataType.Date, "gte") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate >= f.DateValue)),
+                (PropertyDataType.Date, "lte") => query.Where(e => e.EntityPropertyValues.Any(v => v.PropertyId == pid && v.ValueDate <= f.DateValue)),
                 _ => query
             };
         }
@@ -139,11 +140,11 @@ public sealed class EntityRepository(RelativaDbContext db) : IEntityRepository
         var desc = s.Direction.Equals("desc", StringComparison.OrdinalIgnoreCase);
         return (isFirst, desc) switch
         {
-            (true,  true)  => query.OrderByDescending(e => e.EntityPropertyValues
+            (true, true) => query.OrderByDescending(e => e.EntityPropertyValues
                 .Where(v => v.PropertyId == pid).Select(v => v.ValueString).FirstOrDefault()),
-            (true,  false) => query.OrderBy(e => e.EntityPropertyValues
+            (true, false) => query.OrderBy(e => e.EntityPropertyValues
                 .Where(v => v.PropertyId == pid).Select(v => v.ValueString).FirstOrDefault()),
-            (false, true)  => ((IOrderedQueryable<Entity>)query).ThenByDescending(e => e.EntityPropertyValues
+            (false, true) => ((IOrderedQueryable<Entity>)query).ThenByDescending(e => e.EntityPropertyValues
                 .Where(v => v.PropertyId == pid).Select(v => v.ValueString).FirstOrDefault()),
             (false, false) => ((IOrderedQueryable<Entity>)query).ThenBy(e => e.EntityPropertyValues
                 .Where(v => v.PropertyId == pid).Select(v => v.ValueString).FirstOrDefault()),

@@ -1,12 +1,17 @@
 using System.Security.Claims;
 using System.Text;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
+
 using Relativa.Gateway.Middleware;
 using Relativa.Gateway.OpenApi;
+
 using Scalar.AspNetCore;
+
 using Serilog;
+
 using Yarp.ReverseProxy.Transforms;
 
 Log.Logger = new LoggerConfiguration()

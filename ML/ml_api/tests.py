@@ -1,6 +1,6 @@
+import uuid
 from datetime import date
 from unittest.mock import patch
-import uuid
 
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
@@ -74,7 +74,7 @@ class ScoreBatchTests(TestCase):
                 }
             }
         ]
-        deal_mock.return_value = {}
+        deal_mock.return_value = {101: {"created_at": date.today(), "status": "opened"}}
         contract_mock.return_value = []
 
         request = self.factory.post("/api/ml/score/batch", {"entity_ids": [101]}, format="json")

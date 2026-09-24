@@ -13,7 +13,7 @@ import { useGraphStore } from '@/stores/graph';
 import { useEntityStore } from '@/stores/entity';
 import { useOrganizationStore } from '@/stores/organization';
 import { useWorkspaceStore } from '@/stores/workspace';
-import type { GraphNodeDto, GraphEdgeDto, GraphHighlightTag, GraphRiskLevel } from '@/api/graph';
+import type { GraphNodeDto, GraphEdgeDto, GraphHighlightTag } from '@/api/graph';
 import { mlApi, type DealScoreDto } from '@/api/ml';
 import GraphSkeleton from '@/components/feedback/GraphSkeleton.vue';
 import FilterPanel, {
@@ -34,7 +34,6 @@ const container = ref<HTMLDivElement | null>(null);
 const network = shallowRef<Network | null>(null);
 const selectedNode = ref<GraphNodeDto | null>(null);
 const dealScores = ref<Map<number, DealScoreDto>>(new Map());
-const riskFilter = ref<GraphRiskLevel | null>(null);
 
 const filters = ref<FilterPanelState>({
   risk: null,

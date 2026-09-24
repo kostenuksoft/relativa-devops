@@ -1,7 +1,10 @@
 using System.Security.Claims;
+
 using FluentValidation;
 using FluentValidation.Results;
+
 using Microsoft.IdentityModel.JsonWebTokens;
+
 using Relativa.Audit.Application.DTOs;
 using Relativa.Audit.Application.Interfaces;
 using Relativa.Audit.Application.Validators;

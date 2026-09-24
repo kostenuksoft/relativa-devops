@@ -40,17 +40,27 @@ public sealed class OrgInvitationMappingBranchTests
         _orgMemberRepo.Setup(r => r.GetAsync(Caller, Org, It.IsAny<CancellationToken>())).ReturnsAsync(
             new UserRoleOrganization
             {
-                UserId = Caller, OrganizationId = Org,
-                Role = new OrganizationRole { Name = "admin", RolePermissions =
-                    [new OrganizationRolePermission { Permission = new Permission { Name = "invite_to_org" } }] }
+                UserId = Caller,
+                OrganizationId = Org,
+                Role = new OrganizationRole
+                {
+                    Name = "admin",
+                    RolePermissions =
+                    [new OrganizationRolePermission { Permission = new Permission { Name = "invite_to_org" } }]
+                }
             });
 
     private static OrganizationInvitation Pending(int id, OrganizationRole? role) =>
         new()
         {
-            Id = id, OrganizationId = Org, Email = "a@test.io", Token = "t" + id,
-            Status = "Pending", ExpiresAt = DateTime.UtcNow.AddDays(3),
-            Organization = new Organization { Id = Org, Name = "Org" }, Role = role!,
+            Id = id,
+            OrganizationId = Org,
+            Email = "a@test.io",
+            Token = "t" + id,
+            Status = "Pending",
+            ExpiresAt = DateTime.UtcNow.AddDays(3),
+            Organization = new Organization { Id = Org, Name = "Org" },
+            Role = role!,
         };
 
     [Fact]
@@ -112,8 +122,12 @@ public sealed class OrgInvitationMappingBranchTests
         _userRepo.Setup(r => r.GetByEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync((User?)null);
         var expired = new OrganizationInvitation
         {
-            Id = 88, OrganizationId = Org, Email = "new@test.io", Status = "Pending",
-            ExpiresAt = DateTime.UtcNow.AddDays(-1), Token = "old",
+            Id = 88,
+            OrganizationId = Org,
+            Email = "new@test.io",
+            Status = "Pending",
+            ExpiresAt = DateTime.UtcNow.AddDays(-1),
+            Token = "old",
         };
         _invitationRepo.Setup(r => r.GetPendingByOrgAndEmailAsync(Org, "new@test.io", It.IsAny<CancellationToken>())).ReturnsAsync(expired);
 

@@ -1,6 +1,6 @@
+using Relativa.Core.Application.Authorization;
 using Relativa.Core.Application.Exceptions;
 using Relativa.Core.Application.Interfaces;
-using Relativa.Core.Application.Authorization;
 using Relativa.Core.Domain.Interfaces;
 using Relativa.Persistence.Entities;
 

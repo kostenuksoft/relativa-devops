@@ -90,11 +90,17 @@ public sealed class RepositoryIntegrationTests : IAsyncLifetime
 
         db.UserRoleWorkspaces.Add(new UserRoleWorkspace
         {
-            UserId = _userId1, WorkspaceId = _ws1Id, WsRoleId = _wsRoleId, JoinedAt = DateTime.UtcNow
+            UserId = _userId1,
+            WorkspaceId = _ws1Id,
+            WsRoleId = _wsRoleId,
+            JoinedAt = DateTime.UtcNow
         });
         db.UserRoleOrganizations.Add(new UserRoleOrganization
         {
-            UserId = _userId1, OrganizationId = _orgId, OrgRoleId = _orgRoleSysId, JoinedAt = DateTime.UtcNow
+            UserId = _userId1,
+            OrganizationId = _orgId,
+            OrgRoleId = _orgRoleSysId,
+            JoinedAt = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
     }
@@ -556,7 +562,10 @@ public sealed class RepositoryIntegrationTests : IAsyncLifetime
 
         db.UserRoleOrganizations.Add(new UserRoleOrganization
         {
-            UserId = owner.Id, OrganizationId = org.Id, OrgRoleId = ownerRole.Id, JoinedAt = DateTime.UtcNow
+            UserId = owner.Id,
+            OrganizationId = org.Id,
+            OrgRoleId = ownerRole.Id,
+            JoinedAt = DateTime.UtcNow
         });
         var ws = new Workspace { Name = "Owned WS", OrganizationId = org.Id, CreatedByUserId = owner.Id };
         db.Workspaces.Add(ws);

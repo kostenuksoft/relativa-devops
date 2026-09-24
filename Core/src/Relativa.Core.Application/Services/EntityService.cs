@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
+
 using FluentValidation;
+
 using Relativa.Core.Application.DTOs.Entity;
 using Relativa.Core.Application.Exceptions;
 using Relativa.Core.Application.Interfaces;
@@ -317,14 +319,14 @@ public sealed class EntityService(
 
     private static ResolvedFilterCondition ResolveFilter(EntityFilterCondition f, Property prop) => prop.DataType switch
     {
-        PropertyDataType.String  => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, f.Value, null, null, null, null),
-        PropertyDataType.Int     => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null,
+        PropertyDataType.String => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, f.Value, null, null, null, null),
+        PropertyDataType.Int => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null,
             int.TryParse(f.Value, out var i) ? i : throw new AppException("property_expects_integer", 400, $"Property '{prop.Name}' expects an integer filter value."), null, null, null),
         PropertyDataType.Decimal => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null, null,
             decimal.TryParse(f.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var d) ? d : throw new AppException("property_expects_decimal", 400, $"Property '{prop.Name}' expects a decimal filter value."), null, null),
-        PropertyDataType.Bool    => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null, null, null,
+        PropertyDataType.Bool => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null, null, null,
             bool.TryParse(f.Value, out var b) ? b : throw new AppException("property_expects_boolean", 400, $"Property '{prop.Name}' expects a boolean filter value (true/false)."), null),
-        PropertyDataType.Date    => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null, null, null, null,
+        PropertyDataType.Date => new ResolvedFilterCondition(f.PropertyId, prop.DataType, f.Op, null, null, null, null,
             DateOnly.TryParseExact(f.Value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt) ? dt : throw new AppException("property_expects_date", 400, $"Property '{prop.Name}' expects a date filter value in yyyy-MM-dd format.")),
         _ => throw new AppException("unsupported_filter_data_type", 400, $"Unsupported data type '{prop.DataType}' for filter on property '{prop.Name}'.")
     };
@@ -391,12 +393,12 @@ public sealed class EntityService(
 
     private static string? ValueToInputString(EntityPropertyValue pv) => pv.Property.DataType switch
     {
-        PropertyDataType.String  => pv.ValueString,
-        PropertyDataType.Int     => pv.ValueInt?.ToString(CultureInfo.InvariantCulture),
+        PropertyDataType.String => pv.ValueString,
+        PropertyDataType.Int => pv.ValueInt?.ToString(CultureInfo.InvariantCulture),
         PropertyDataType.Decimal => pv.ValueDecimal?.ToString(CultureInfo.InvariantCulture),
-        PropertyDataType.Bool    => pv.ValueBool?.ToString(),
-        PropertyDataType.Date    => pv.ValueDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-        _                        => null
+        PropertyDataType.Bool => pv.ValueBool?.ToString(),
+        PropertyDataType.Date => pv.ValueDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        _ => null
     };
 
     private static void ValidateReadonlyPreserved(
@@ -496,7 +498,7 @@ public sealed class EntityService(
                     if (prop.AllowedValues.Count > 0
                         && !prop.AllowedValues.Any(av => string.Equals(av.Value, input.Value, StringComparison.OrdinalIgnoreCase)))
                     {
-                        throw new AppException("invalid_allowed_value", 400, 
+                        throw new AppException("invalid_allowed_value", 400,
                             $"'{input.Value}' is not a valid value for '{prop.Name}'. " +
                             $"Allowed: {string.Join(", ", prop.AllowedValues.Select(av => av.Value))}.");
                     }
@@ -616,12 +618,12 @@ public sealed class EntityService(
 
     private static object? ResolveValue(EntityPropertyValue pv) => pv.Property.DataType switch
     {
-        PropertyDataType.String  => pv.ValueString,
-        PropertyDataType.Int     => (object?)pv.ValueInt,
+        PropertyDataType.String => pv.ValueString,
+        PropertyDataType.Int => (object?)pv.ValueInt,
         PropertyDataType.Decimal => pv.ValueDecimal,
-        PropertyDataType.Bool    => pv.ValueBool,
-        PropertyDataType.Date    => pv.ValueDate?.ToString("yyyy-MM-dd"),
-        _                        => null
+        PropertyDataType.Bool => pv.ValueBool,
+        PropertyDataType.Date => pv.ValueDate?.ToString("yyyy-MM-dd"),
+        _ => null
     };
 
     public async Task<EntityRelationshipRefDto> CreateRelationshipAsync(int workspaceId, int userId, CreateEntityRelationshipRequest request, CancellationToken ct = default)
@@ -700,7 +702,7 @@ public sealed class EntityService(
             var remaining = await entityRepository.CountRelationshipsBySourceAsync(
                 rel.SourceEntityId, rel.RelationshipTypeId, ct);
             if (remaining <= 1)
-                throw new AppException("cannot_unlink_required_relationship", 400, 
+                throw new AppException("cannot_unlink_required_relationship", 400,
                     $"Cannot unlink: the entity requires at least one '{rel.RelationshipType.Name}' link.");
         }
 

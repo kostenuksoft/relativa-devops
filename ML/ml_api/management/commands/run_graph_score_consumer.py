@@ -9,8 +9,6 @@ from django.core.management.base import BaseCommand
 from ml_api.apps import MlApiConfig
 from ml_api.recalculate_service import (
     BATCH_TIMEOUT_SECONDS,
-    normalize_entity_ids,
-    recompute_deal_analysis,
     _check_deadline,
     _ensure_deal_analysis_entities,
     _load_analysis_state,
@@ -18,6 +16,8 @@ from ml_api.recalculate_service import (
     _load_contract_inputs,
     _load_deal_inputs,
     _load_schema_config,
+    normalize_entity_ids,
+    recompute_deal_analysis,
 )
 from ml_api.views import _needs_analysis_refresh, _persist_scores, _score_or_diagnose
 
@@ -133,7 +133,7 @@ def _run_scoring(entity_ids: list[int]) -> list[dict]:
     client_rows = _load_client_inputs(entity_ids, config)
     _check_deadline(deadline)
 
-    from ml_api.recalculate_service import ANALYSIS_PROP_SOURCE_UPDATED_AT, ANALYSIS_PROP_CALCULATED_AT
+    from ml_api.recalculate_service import ANALYSIS_PROP_CALCULATED_AT, ANALYSIS_PROP_SOURCE_UPDATED_AT
     results_by_id: dict[int, dict] = {}
     stale_analysis_ids: list[int] = []
 

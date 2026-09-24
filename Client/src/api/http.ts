@@ -52,7 +52,7 @@ export async function gatewayFetch(
   );
 }
 
-async function parseResponse<T>(res: Response, silent = false): Promise<T> {
+async function parseResponse<T>(res: Response, _silent = false): Promise<T> {
   const text = await res.text();
   const body = text ? safeJson(text) : undefined;
 

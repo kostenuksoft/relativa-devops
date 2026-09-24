@@ -1,9 +1,11 @@
 using System.Text.Json.Nodes;
+
 using Microsoft.AspNetCore.Mvc;
+
 using Relativa.Core.Application.DTOs.Entity;
+using Relativa.Core.Application.Exceptions;
 using Relativa.Core.Application.Interfaces;
 using Relativa.Core.Domain.Interfaces;
-using Relativa.Core.Application.Exceptions;
 
 namespace Relativa.Core.Endpoints;
 
@@ -213,7 +215,7 @@ public static class EntityEndpoints
         {
             var parts = s.Split(':', 3);
             if (parts.Length < 2 || !int.TryParse(parts[0], out var pid))
-                throw new AppException("invalid_filter_format", 400, 
+                throw new AppException("invalid_filter_format", 400,
                     $"Invalid filter format '{s}'. Expected propertyId:op or propertyId:op:value.");
             result.Add(new EntityFilterCondition(pid, parts[1], parts.Length == 3 ? parts[2] : null));
         }
@@ -228,7 +230,7 @@ public static class EntityEndpoints
         {
             var parts = s.Split(':', 2);
             if (!int.TryParse(parts[0], out var pid))
-                throw new AppException("invalid_sort_format", 400, 
+                throw new AppException("invalid_sort_format", 400,
                     $"Invalid sort format '{s}'. Expected propertyId or propertyId:asc|desc.");
             var dir = parts.Length == 2 ? parts[1].ToLowerInvariant() : "asc";
             if (dir is not "asc" and not "desc")

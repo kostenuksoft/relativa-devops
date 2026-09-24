@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using Relativa.Authentication.Application.Emails;
 using Relativa.Authentication.Application.Exceptions;
 using Relativa.Authentication.Application.Interfaces;
