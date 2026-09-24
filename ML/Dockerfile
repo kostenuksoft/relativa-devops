@@ -11,7 +11,7 @@ COPY relativa_ml/ relativa_ml/
 COPY scripts/run_api_and_consumer.sh scripts/run_api_and_consumer.sh
 COPY manage.py ./
 
-RUN python -m pip install --no-cache-dir --upgrade pip \
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools \
     && python -m pip install --no-cache-dir -e . \
     && chmod +x scripts/run_api_and_consumer.sh
 
