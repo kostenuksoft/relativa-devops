@@ -95,6 +95,10 @@ spec:
             limits:
               cpu: 500m
               memory: 256Mi
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 5
           readinessProbe:
             httpGet:
               path: /health

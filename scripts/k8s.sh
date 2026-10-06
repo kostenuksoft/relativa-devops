@@ -10,7 +10,7 @@ DEMO_DEPLOYMENT="${DEMO_DEPLOYMENT:-gateway}"
 CONFIG_DEPLOYMENT="${CONFIG_DEPLOYMENT:-auth}"
 HEALTH_PATH="${HEALTH_PATH:-/health}"
 SCALE_REPLICAS="${SCALE_REPLICAS:-4}"
-TRAFFIC_REQUESTS="${TRAFFIC_REQUESTS:-20}"
+TRAFFIC_REQUESTS="${TRAFFIC_REQUESTS:-40}"
 UPDATE_TAG="${UPDATE_TAG:-1.1.0}"
 MISSING_TAG="${MISSING_TAG:-0.0.0-missing}"
 PULL_FAILURE_TIMEOUT="${PULL_FAILURE_TIMEOUT:-180}"
@@ -139,6 +139,7 @@ cmd_demo() {
   step "Scaling: $deployment to $SCALE_REPLICAS replicas"
   kn scale "deployment/$deployment" --replicas="$SCALE_REPLICAS"
   kn rollout status "deployment/$deployment" --timeout="$ROLLOUT_TIMEOUT"
+  wait_for_endpoints "$deployment" "$SCALE_REPLICAS"
   kn get pods -l "$label" -o wide
   printf 'Responses per instance over %s requests:\n' "$TRAFFIC_REQUESTS"
   in_cluster "i=0; while [ \$i -lt $TRAFFIC_REQUESTS ]; do curl -fsS $url; echo; i=\$((i+1)); done" \

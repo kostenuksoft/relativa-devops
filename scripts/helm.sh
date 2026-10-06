@@ -63,22 +63,12 @@ rendered_value() {
 list_backups() {
   local claim
   claim="$(kn get pvc -l "app.kubernetes.io/instance=$RELEASE,app.kubernetes.io/component=backup" -o jsonpath='{.items[0].metadata.name}')"
-  [[ -n "$claim" ]] || { printf 'Backups are disabled for %s
-' "$RELEASE"; return 0; }
-  kn run "backups-$RANDOM$RANDOM" --image="$PROBE_IMAGE" --restart=Never --rm -i --quiet --overrides="$(cat <<JSON
-{
-  "spec": {
-    "containers": [{
-      "name": "backups",
-      "image": "$PROBE_IMAGE",
-      "command": ["ls", "-lh", "/backups"],
-      "volumeMounts": [{ "name": "backups", "mountPath": "/backups" }]
-    }],
-    "volumes": [{ "name": "backups", "persistentVolumeClaim": { "claimName": "$claim" } }]
-  }
-}
-JSON
-)"
+  if [[ -z "$claim" ]]; then
+    printf 'Backups are disabled for %s
+' "$RELEASE"
+    return 0
+  fi
+  in_cluster "ls -lh /backups" "$(printf '{"spec":{"containers":[{"name":"probe","image":"%s","command":["sh","-c","ls -lh /backups"],"volumeMounts":[{"name":"backups","mountPath":"/backups"}]}],"volumes":[{"name":"backups","persistentVolumeClaim":{"claimName":"%s"}}]}}' "$PROBE_IMAGE" "$claim")"
 }
 
 cmd_lint() {

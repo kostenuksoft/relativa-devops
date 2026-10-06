@@ -234,6 +234,10 @@ spec:
             {{- .env | nindent 12 }}
           resources:
             {{- toYaml $values.resources | nindent 12 }}
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: {{ $root.Values.shutdownDelaySeconds }}
           readinessProbe:
             httpGet:
               path: {{ $values.healthPath }}

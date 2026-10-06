@@ -4,6 +4,7 @@ MINIKUBE_DRIVER="${MINIKUBE_DRIVER:-docker}"
 MINIKUBE_CPUS="${MINIKUBE_CPUS:-4}"
 MINIKUBE_MEMORY="${MINIKUBE_MEMORY:-8g}"
 ROLLOUT_TIMEOUT="${ROLLOUT_TIMEOUT:-300s}"
+ENDPOINTS_TIMEOUT_SECONDS="${ENDPOINTS_TIMEOUT_SECONDS:-120}"
 PROBE_IMAGE="${PROBE_IMAGE:-curlimages/curl:8.16.0}"
 
 step() {
@@ -59,7 +60,29 @@ print_ingress_hosts() {
 }
 
 in_cluster() {
-  kn run "probe-$RANDOM$RANDOM" --image="$PROBE_IMAGE" --restart=Never --rm -i --quiet --command -- sh -c "$1"
+  local script="$1" overrides="${2:-}" name phase=""
+  name="probe-$RANDOM$RANDOM"
+  kn run "$name" --image="$PROBE_IMAGE" --restart=Never ${overrides:+"--overrides=$overrides"} \
+    --command -- sh -c "$script" >/dev/null
+  until [[ "$phase" == Succeeded || "$phase" == Failed ]]; do
+    sleep 1
+    phase="$(kn get pod "$name" -o jsonpath='{.status.phase}')"
+  done
+  kn logs "$name"
+  kn delete pod "$name" --wait=false >/dev/null
+  [[ "$phase" == Succeeded ]]
+}
+
+wait_for_endpoints() {
+  local service="$1" expected="$2" ready=0 elapsed=0
+  while (( ready < expected )); do
+    (( elapsed < ENDPOINTS_TIMEOUT_SECONDS )) || fail "service $service has $ready of $expected ready endpoints"
+    ready="$(kn get endpointslices -l "kubernetes.io/service-name=$service" \
+      -o jsonpath='{range .items[*].endpoints[?(@.conditions.ready==true)]}x{end}')"
+    ready="${#ready}"
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
 }
 
 wait_for_rollouts() {

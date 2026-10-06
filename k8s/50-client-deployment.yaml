@@ -50,6 +50,10 @@ spec:
             limits:
               cpu: "1"
               memory: 1Gi
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 5
           readinessProbe:
             httpGet:
               path: /
