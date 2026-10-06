@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailhog
+  namespace: relativa
+  labels:
+    app.kubernetes.io/name: mailhog
+    app.kubernetes.io/part-of: relativa
+    app.kubernetes.io/component: mail
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mailhog
+    app.kubernetes.io/part-of: relativa
+  ports:
+    - name: smtp
+      port: 1025
+      targetPort: smtp
+    - name: http
+      port: 8025
+      targetPort: http

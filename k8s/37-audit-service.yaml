@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: audit
+  namespace: relativa
+  labels:
+    app.kubernetes.io/name: audit
+    app.kubernetes.io/part-of: relativa
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: audit
+    app.kubernetes.io/part-of: relativa
+  ports:
+    - name: http
+      port: 8086
+      targetPort: http

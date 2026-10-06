@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: relativa
+  labels:
+    app.kubernetes.io/name: gateway
+    app.kubernetes.io/part-of: relativa
+    app.kubernetes.io/component: gateway
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gateway
+      app.kubernetes.io/part-of: relativa
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gateway
+        app.kubernetes.io/part-of: relativa
+        app.kubernetes.io/component: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ghcr.io/kostenuksoft/relativa-gateway:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: Jwt__SecretKey
+              valueFrom:
+                secretKeyRef:
+                  name: relativa-secrets
+                  key: JWT_SECRET_KEY
+            - name: Jwt__Issuer
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: JWT_ISSUER
+            - name: Jwt__Audience
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: JWT_AUDIENCE
+            - name: Cors__Origins__0
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: CLIENT_PUBLIC_URL
+            - name: Gateway__PublicBaseUrl
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: GATEWAY_PUBLIC_URL
+            - name: ReverseProxy__Clusters__auth__Destinations__d1__Address
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: AUTH_URL
+            - name: ReverseProxy__Clusters__core__Destinations__d1__Address
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: CORE_URL
+            - name: ReverseProxy__Clusters__graph__Destinations__d1__Address
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: GRAPH_URL
+            - name: ReverseProxy__Clusters__ml__Destinations__d1__Address
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: ML_URL
+            - name: ReverseProxy__Clusters__audit__Destinations__d1__Address
+              valueFrom:
+                configMapKeyRef:
+                  name: relativa-config
+                  key: AUDIT_URL
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20

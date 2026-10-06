@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: graph
+  namespace: relativa
+  labels:
+    app.kubernetes.io/name: graph
+    app.kubernetes.io/part-of: relativa
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: graph
+    app.kubernetes.io/part-of: relativa
+  ports:
+    - name: http
+      port: 8083
+      targetPort: http

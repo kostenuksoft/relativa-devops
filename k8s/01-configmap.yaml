@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: relativa-config
+  namespace: relativa
+  labels:
+    app.kubernetes.io/part-of: relativa
+data:
+  ASPNETCORE_ENVIRONMENT: Development
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_NAME: relativa
+  DB_USER: relativa
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USER: relativa
+  JWT_ISSUER: relativa-auth
+  JWT_AUDIENCE: relativa
+  SMTP_HOST: mailhog
+  SMTP_PORT: "1025"
+  CLIENT_HOST: relativa.local
+  CLIENT_PUBLIC_URL: http://relativa.local
+  GATEWAY_PUBLIC_URL: http://api.relativa.local
+  AUTH_URL: http://auth:8081
+  CORE_URL: http://core:8082
+  GRAPH_URL: http://graph:8083
+  ML_URL: http://ml:8084
+  AUDIT_URL: http://audit:8086
