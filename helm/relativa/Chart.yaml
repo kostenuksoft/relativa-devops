@@ -1,0 +1,14 @@
+apiVersion: v2
+name: relativa
+description: Relativa microservices (auth, core, graph, audit, ml, gateway, client) with PostgreSQL, RabbitMQ and MailHog
+type: application
+version: 0.1.0
+appVersion: "1.1.0"
+home: https://github.com/kostenuksoft/relativa-devops
+sources:
+  - https://github.com/kostenuksoft/relativa-devops
+keywords:
+  - relativa
+  - aspnetcore
+  - django
+  - vue

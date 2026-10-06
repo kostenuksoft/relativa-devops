@@ -1,0 +1,40 @@
+{{- $component := dict "root" . "component" "mailhog" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "relativa.componentName" $component }}
+  labels:
+    {{- include "relativa.labels" $component | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "relativa.selectorLabels" $component | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "relativa.labels" $component | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: mailhog
+          image: {{ include "relativa.image" .Values.mailhog.image }}
+          ports:
+            - name: smtp
+              containerPort: {{ .Values.mailhog.smtpPort }}
+            - name: http
+              containerPort: {{ .Values.mailhog.httpPort }}
+          resources:
+            {{- toYaml .Values.mailhog.resources | nindent 12 }}
+          readinessProbe:
+            tcpSocket:
+              port: smtp
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: smtp
+            initialDelaySeconds: 10
+            periodSeconds: 20

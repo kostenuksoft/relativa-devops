@@ -1,0 +1,244 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/kostenuksoft/relativa
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 0
+
+probes:
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  liveness:
+    initialDelaySeconds: 20
+    periodSeconds: 20
+
+config:
+  aspnetcoreEnvironment: Development
+  jwt:
+    issuer: relativa-auth
+    audience: relativa
+
+publicUrls:
+  client: http://localhost:3000
+  gateway: http://localhost:8080
+
+secrets:
+  dbPassword: relativa-local-db
+  rabbitmqPassword: relativa-local-mq
+  jwtSecretKey: relativa-local-jwt-signing-key-min-32-chars
+
+ingress:
+  enabled: false
+  className: nginx
+  scheme: http
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  hosts:
+    client: relativa.local
+    gateway: api.relativa.local
+
+waitImage:
+  repository: busybox
+  tag: "1.37"
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 50m
+      memory: 32Mi
+
+postgres:
+  image:
+    repository: postgres
+    tag: 16-alpine
+  port: 5432
+  database: relativa
+  username: relativa
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+rabbitmq:
+  image:
+    repository: rabbitmq
+    tag: 3.13-management-alpine
+  port: 5672
+  managementPort: 15672
+  username: relativa
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+
+mailhog:
+  image:
+    repository: mailhog/mailhog
+    tag: v1.0.1
+  smtpPort: 1025
+  httpPort: 8025
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+migration:
+  image: {}
+  backoffLimit: 4
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+auth:
+  image: {}
+  replicaCount: 1
+  healthPath: /health
+  port: 8081
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+core:
+  image: {}
+  replicaCount: 1
+  healthPath: /health
+  port: 8082
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+graph:
+  image: {}
+  replicaCount: 1
+  healthPath: /
+  port: 8083
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+audit:
+  image: {}
+  replicaCount: 1
+  healthPath: /health
+  port: 8086
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+ml:
+  image: {}
+  replicaCount: 1
+  healthPath: /api/ml/health/
+  port: 8084
+  service:
+    type: ClusterIP
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+    liveness:
+      initialDelaySeconds: 30
+  resources:
+    requests:
+      cpu: 100m
+      memory: 384Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+gateway:
+  image: {}
+  replicaCount: 1
+  healthPath: /health
+  port: 8080
+  service:
+    type: NodePort
+  probes:
+    readiness:
+      periodSeconds: 5
+    liveness:
+      initialDelaySeconds: 15
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+client:
+  image: {}
+  replicaCount: 1
+  healthPath: /
+  port: 3000
+  service:
+    type: NodePort
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+    liveness:
+      initialDelaySeconds: 30
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+tests:
+  image:
+    repository: curlimages/curl
+    tag: 8.16.0

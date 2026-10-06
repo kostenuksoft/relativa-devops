@@ -1,0 +1,5 @@
+{{- define "relativa.client.env" -}}
+{{ include "relativa.configEnv" (dict "root" . "name" "VITE_GATEWAY_URL" "key" "GATEWAY_PUBLIC_URL") }}
+{{ include "relativa.configEnv" (dict "root" . "name" "VITE_ALLOWED_HOSTS" "key" "CLIENT_ALLOWED_HOSTS") }}
+{{- end }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "client" "env" (include "relativa.client.env" .)) }}

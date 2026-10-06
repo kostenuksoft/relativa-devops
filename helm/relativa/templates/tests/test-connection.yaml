@@ -1,0 +1,24 @@
+{{- $component := dict "root" . "component" "test" }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "relativa.componentName" $component }}
+  labels:
+    {{- include "relativa.labels" $component | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: {{ include "relativa.image" .Values.tests.image }}
+      command: ["sh", "-c"]
+      args:
+        - >-
+          set -e;
+          {{- range list "gateway" "auth" "core" "graph" "audit" "ml" "client" }}
+          {{- $values := index $.Values . }}
+          code=$(curl -fsS -o /dev/null -w '%{http_code}' {{ include "relativa.serviceUrl" (dict "root" $ "component" .) }}{{ $values.healthPath }});
+          echo "{{ . }} $code";
+          {{- end }}

@@ -1,0 +1,27 @@
+Relativa {{ .Chart.AppVersion }} is installed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Wait until every pod is ready:
+  kubectl --namespace {{ .Release.Namespace }} get pods -l app.kubernetes.io/instance={{ .Release.Name }} -w
+
+{{- if .Values.ingress.enabled }}
+
+Open the application through the ingress:
+  1. Run "minikube tunnel" in a separate terminal.
+  2. Map the hosts to the tunnel address (127.0.0.1 on Windows / macOS, "minikube ip" on Linux):
+{{- range .Values.ingress.hosts }}
+       {{ . }}
+{{- end }}
+  3. Client:  {{ include "relativa.clientUrl" . }}
+     API:     {{ include "relativa.gatewayUrl" . }}/scalar
+{{- else }}
+
+Open the application through port forwarding:
+  kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "relativa.componentName" (dict "root" . "component" "gateway") }} {{ (urlParse .Values.publicUrls.gateway).host | splitList ":" | last }}:{{ .Values.gateway.port }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "relativa.componentName" (dict "root" . "component" "client") }} {{ (urlParse .Values.publicUrls.client).host | splitList ":" | last }}:{{ .Values.client.port }}
+
+  Client:  {{ include "relativa.clientUrl" . }}
+  API:     {{ include "relativa.gatewayUrl" . }}/scalar
+{{- end }}
+
+Check the release:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

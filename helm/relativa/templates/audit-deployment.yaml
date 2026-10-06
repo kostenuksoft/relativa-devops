@@ -1,0 +1,7 @@
+{{- define "relativa.audit.env" -}}
+{{ include "relativa.configEnv" (dict "root" . "name" "ASPNETCORE_ENVIRONMENT") }}
+{{ include "relativa.databaseEnv" (dict "root" .) }}
+{{ include "relativa.jwtEnv" (dict "root" .) }}
+{{ include "relativa.rabbitmqEnv" (dict "root" . "sections" (list "RabbitMqAudit")) }}
+{{- end }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "audit" "waitForDependencies" true "env" (include "relativa.audit.env" .)) }}

@@ -1,0 +1,18 @@
+{{- $component := dict "root" . "component" "rabbitmq" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "relativa.componentName" $component }}
+  labels:
+    {{- include "relativa.labels" $component | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "relativa.selectorLabels" $component | nindent 4 }}
+  ports:
+    - name: amqp
+      port: {{ .Values.rabbitmq.port }}
+      targetPort: amqp
+    - name: management
+      port: {{ .Values.rabbitmq.managementPort }}
+      targetPort: management

@@ -1,0 +1,1 @@
+{{ include "relativa.appService" (dict "root" . "component" "client") }}

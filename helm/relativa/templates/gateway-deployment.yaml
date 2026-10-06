@@ -1,0 +1,10 @@
+{{- define "relativa.gateway.env" -}}
+{{ include "relativa.configEnv" (dict "root" . "name" "ASPNETCORE_ENVIRONMENT") }}
+{{ include "relativa.jwtEnv" (dict "root" .) }}
+{{ include "relativa.configEnv" (dict "root" . "name" "Cors__Origins__0" "key" "CLIENT_PUBLIC_URL") }}
+{{ include "relativa.configEnv" (dict "root" . "name" "Gateway__PublicBaseUrl" "key" "GATEWAY_PUBLIC_URL") }}
+{{- range list "auth" "core" "graph" "ml" "audit" }}
+{{ include "relativa.configEnv" (dict "root" $ "name" (printf "ReverseProxy__Clusters__%s__Destinations__d1__Address" .) "key" (printf "%s_URL" (upper .))) }}
+{{- end }}
+{{- end }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "gateway" "env" (include "relativa.gateway.env" .)) }}

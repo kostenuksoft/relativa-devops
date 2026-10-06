@@ -1,0 +1,18 @@
+{{- $component := dict "root" . "component" "mailhog" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "relativa.componentName" $component }}
+  labels:
+    {{- include "relativa.labels" $component | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "relativa.selectorLabels" $component | nindent 4 }}
+  ports:
+    - name: smtp
+      port: {{ .Values.mailhog.smtpPort }}
+      targetPort: smtp
+    - name: http
+      port: {{ .Values.mailhog.httpPort }}
+      targetPort: http

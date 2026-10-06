@@ -1,0 +1,50 @@
+{{- $component := dict "root" . "component" "rabbitmq" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "relativa.componentName" $component }}
+  labels:
+    {{- include "relativa.labels" $component | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "relativa.selectorLabels" $component | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "relativa.labels" $component | nindent 8 }}
+      annotations:
+        {{- include "relativa.configChecksums" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: rabbitmq
+          image: {{ include "relativa.image" .Values.rabbitmq.image }}
+          ports:
+            - name: amqp
+              containerPort: {{ .Values.rabbitmq.port }}
+            - name: management
+              containerPort: {{ .Values.rabbitmq.managementPort }}
+          env:
+            {{- include "relativa.configEnv" (dict "root" . "name" "RABBITMQ_DEFAULT_USER" "key" "RABBITMQ_USER") | nindent 12 }}
+            {{- include "relativa.secretEnv" (dict "root" . "name" "RABBITMQ_DEFAULT_PASS" "key" "RABBITMQ_PASSWORD") | nindent 12 }}
+          resources:
+            {{- toYaml .Values.rabbitmq.resources | nindent 12 }}
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "ping"]
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10

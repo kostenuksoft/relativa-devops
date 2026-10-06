@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "relativa.configName" . }}
+  labels:
+    {{- include "relativa.labels" (dict "root" .) | nindent 4 }}
+data:
+  ASPNETCORE_ENVIRONMENT: {{ .Values.config.aspnetcoreEnvironment | quote }}
+  DB_HOST: {{ include "relativa.componentName" (dict "root" . "component" "postgres") | quote }}
+  DB_PORT: {{ .Values.postgres.port | quote }}
+  DB_NAME: {{ .Values.postgres.database | quote }}
+  DB_USER: {{ .Values.postgres.username | quote }}
+  RABBITMQ_HOST: {{ include "relativa.componentName" (dict "root" . "component" "rabbitmq") | quote }}
+  RABBITMQ_PORT: {{ .Values.rabbitmq.port | quote }}
+  RABBITMQ_USER: {{ .Values.rabbitmq.username | quote }}
+  JWT_ISSUER: {{ .Values.config.jwt.issuer | quote }}
+  JWT_AUDIENCE: {{ .Values.config.jwt.audience | quote }}
+  SMTP_HOST: {{ include "relativa.componentName" (dict "root" . "component" "mailhog") | quote }}
+  SMTP_PORT: {{ .Values.mailhog.smtpPort | quote }}
+  CLIENT_ALLOWED_HOSTS: {{ include "relativa.clientAllowedHosts" . | quote }}
+  CLIENT_PUBLIC_URL: {{ include "relativa.clientUrl" . | quote }}
+  GATEWAY_PUBLIC_URL: {{ include "relativa.gatewayUrl" . | quote }}
+  AUTH_URL: {{ include "relativa.serviceUrl" (dict "root" . "component" "auth") | quote }}
+  CORE_URL: {{ include "relativa.serviceUrl" (dict "root" . "component" "core") | quote }}
+  GRAPH_URL: {{ include "relativa.serviceUrl" (dict "root" . "component" "graph") | quote }}
+  ML_URL: {{ include "relativa.serviceUrl" (dict "root" . "component" "ml") | quote }}
+  AUDIT_URL: {{ include "relativa.serviceUrl" (dict "root" . "component" "audit") | quote }}
