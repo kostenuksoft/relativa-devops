@@ -1,6 +1,6 @@
 # Helm-чарт relativa
 
-Чарт розгортає той самий набір об'єктів, що й маніфести з [`k8s/`](../../k8s): PostgreSQL з PVC, RabbitMQ, MailHog, Job міграцій, сервіси auth, core, graph, audit, ml, gateway, client та Ingress.
+Чарт розгортає той самий набір об'єктів, що й маніфести з [`k8s/`](../../k8s): PostgreSQL з PVC, RabbitMQ, MailHog, Job міграцій з ServiceAccount / Role / RoleBinding для очікування на нього, сервіси auth, core, graph, audit, ml, gateway, client та Ingress. Додатково — PVC для резервних копій БД.
 Імена всіх об'єктів будуються з імені релізу (`<release>-relativa-<component>`, або `<release>-<component>`, якщо ім'я релізу вже містить `relativa`), тож чарт можна встановити кілька разів в один кластер.
 
 ## version і appVersion
@@ -45,7 +45,7 @@ scripts/helm.sh down
 | `envs` | різниця між dev і prod без встановлення в кластер (`helm template` + `diff`) і демонстрація пріоритету значень |
 | `compare` | кількість об'єктів кожного типу в `k8s/` і в згенерованих маніфестах чарта |
 | `status` | перелік релізів, статус, значення релізу, секрети `sh.helm.release.v1.*`, у яких Helm зберігає стан, і об'єкти namespace |
-| `demo` | оновлення через `--set image.tag`, оновлення з `values-prod.yaml`, історія ревізій і різниця значень, відкат до ревізії 1, хуки, `helm test` |
+| `demo` | оновлення через `--set image.tag`, оновлення з `values-prod.yaml`, історія ревізій і різниця значень, відкат до ревізії 1, хуки та створені ними резервні копії, Job міграцій, `helm test` |
 | `ui` | відкриває Headlamp (реліз видно в розділі Apps / Helm) |
 | `down` | `helm uninstall` і перевірка, що в namespace не залишилося об'єктів |
 
@@ -56,10 +56,11 @@ scripts/helm.sh down
 Від найнижчого до найвищого: `values.yaml` чарта → файли `-f` у порядку передачі (наступний перекриває попередній) → `--set` / `--set-string` / `--set-file`.
 Наприклад, `gateway.replicaCount` дорівнює `1` у `values.yaml`, `2` з `-f values-prod.yaml` і `3` з `-f values-prod.yaml --set gateway.replicaCount=3`.
 
-## Хук і тест
+## Міграції, хук і тест
 
-- `templates/migration-job.yaml` — Job міграцій з `helm.sh/hook: post-install,pre-upgrade`: запускається після встановлення і перед кожним оновленням, попередній Job видаляється перед створенням нового (`before-hook-creation`).
-- `templates/tests/test-connection.yaml` — под з `helm.sh/hook: test`, який перевіряє health-ендпоінти всіх сервісів через їхні Service; запуск — `helm test relativa --namespace relativa --logs`.
+- `templates/migration-job.yaml` — Job міграцій з номером ревізії в імені (`<fullname>-migration-<revision>`). Кожне встановлення, оновлення і відкат створюють новий Job, попередній видаляється разом зі старою ревізією, а `helm uninstall` прибирає його разом з релізом. Сервіси з БД чекають на завершення саме цього Job через init-контейнери `kubectl wait`; Role дозволяє читати лише його.
+- `templates/backup-job.yaml` — хук `pre-upgrade,pre-rollback`: перед кожним оновленням і відкатом робить `pg_dump` у PVC `<fullname>-backup` і залишає `backup.keep` останніх копій. Якщо резервна копія не вдалася, оновлення не виконується. Після успіху Job видаляється (`hook-succeeded`).
+- `templates/tests/test-connection.yaml` — под з `helm.sh/hook: test`, який перевіряє health-ендпоінти всіх сервісів через їхні Service; запуск — `helm test relativa --namespace relativa --logs`. Після успішного тесту под видаляється.
 
 ## Значення
 
@@ -90,5 +91,10 @@ scripts/helm.sh down
 | `rabbitmq.username`, `rabbitmq.port`, `rabbitmq.managementPort` | `relativa`, `5672`, `15672` | | | параметри брокера |
 | `mailhog.smtpPort`, `mailhog.httpPort` | `1025`, `8025` | | | порти MailHog |
 | `migration.backoffLimit` | `4` | | | кількість повторів Job міграцій |
+| `migration.waitTimeout` | `10m` | | | скільки сервіси чекають на завершення міграцій |
+| `migrationReaderImage` | `registry.k8s.io/kubectl:v1.37.0` | | | образ init-контейнерів, що чекають на міграції |
+| `backup.enabled` | `true` | | | хук резервного копіювання і PVC для копій |
+| `backup.keep` | `5` | | | скільки останніх копій зберігати |
+| `backup.persistence.size` | `2Gi` | | | розмір PVC для копій |
 | `waitImage`, `tests.image` | `busybox:1.37`, `curlimages/curl:8.16.0` | | | образи init-контейнерів і тесту |
 | `imagePullSecrets` | `[]` | | | секрети для приватного registry |

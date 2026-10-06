@@ -57,6 +57,33 @@ waitImage:
       cpu: 50m
       memory: 32Mi
 
+migrationReaderImage:
+  repository: registry.k8s.io/kubectl
+  tag: v1.37.0
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+backup:
+  enabled: true
+  keep: 5
+  persistence:
+    size: 2Gi
+    storageClassName: ""
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
 postgres:
   image:
     repository: postgres
@@ -110,6 +137,7 @@ mailhog:
 migration:
   image: {}
   backoffLimit: 4
+  waitTimeout: 10m
   resources:
     requests:
       cpu: 100m

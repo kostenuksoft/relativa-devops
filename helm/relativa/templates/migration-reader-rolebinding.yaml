@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "relativa.migrationReaderName" . }}
+  labels:
+    {{- include "relativa.labels" (dict "root" . "component" "migration-reader") | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "relativa.migrationReaderName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "relativa.migrationReaderName" . }}
+    namespace: {{ .Release.Namespace }}

@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "relativa.migrationReaderName" . }}
+  labels:
+    {{- include "relativa.labels" (dict "root" . "component" "migration-reader") | nindent 4 }}
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    resourceNames: [{{ include "relativa.migrationJobName" . | quote }}]
+    verbs: ["get", "list", "watch"]

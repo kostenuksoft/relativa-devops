@@ -25,6 +25,7 @@ spec:
         app.kubernetes.io/part-of: relativa
         app.kubernetes.io/component: backend
     spec:
+      serviceAccountName: migration-reader
       initContainers:
         - name: wait-for-dependencies
           image: busybox:1.37
@@ -39,6 +40,26 @@ spec:
             limits:
               cpu: 50m
               memory: 32Mi
+        - name: wait-for-migration-job
+          image: registry.k8s.io/kubectl:v1.37.0
+          args: ["wait", "--for=create", "job/migration", "--timeout=10m"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        - name: wait-for-migration
+          image: registry.k8s.io/kubectl:v1.37.0
+          args: ["wait", "--for=condition=complete", "job/migration", "--timeout=10m"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
       containers:
         - name: audit
           image: ghcr.io/kostenuksoft/relativa-audit:1.0.0

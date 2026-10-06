@@ -7,4 +7,4 @@
 {{ include "relativa.configEnv" (dict "root" . "name" "Smtp__Port" "key" "SMTP_PORT") }}
 {{ include "relativa.configEnv" (dict "root" . "name" "App__FrontendBaseUrl" "key" "CLIENT_PUBLIC_URL") }}
 {{- end }}
-{{ include "relativa.appDeployment" (dict "root" . "component" "auth" "waitForDependencies" true "env" (include "relativa.auth.env" .)) }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "auth" "waitForDependencies" true "waitForMigration" true "env" (include "relativa.auth.env" .)) }}

@@ -3,4 +3,4 @@
 {{ include "relativa.databaseEnv" (dict "root" .) }}
 {{ include "relativa.rabbitmqEnv" (dict "root" . "sections" (list "RabbitMqAudit" "RabbitMqGraph")) }}
 {{- end }}
-{{ include "relativa.appDeployment" (dict "root" . "component" "core" "waitForDependencies" true "env" (include "relativa.core.env" .)) }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "core" "waitForDependencies" true "waitForMigration" true "env" (include "relativa.core.env" .)) }}

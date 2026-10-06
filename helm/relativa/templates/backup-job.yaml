@@ -1,0 +1,56 @@
+{{- if .Values.backup.enabled }}
+{{- $component := dict "root" . "component" "backup" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "relativa.componentName" $component }}
+  labels:
+    {{- include "relativa.labels" $component | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade,pre-rollback
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        {{- include "relativa.labels" $component | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: backup
+          image: {{ include "relativa.image" .Values.postgres.image }}
+          command: ["sh", "-c"]
+          args:
+            - >-
+              set -e;
+              file="/backups/$BACKUP_PREFIX-$(date +%Y%m%dT%H%M%S).dump";
+              pg_dump --format=custom --file="$file";
+              echo "created $file";
+              ls -1t /backups/*.dump | tail -n +$((BACKUP_KEEP + 1)) | xargs -r rm -f;
+              ls -lh /backups
+          env:
+            {{- include "relativa.configEnv" (dict "root" . "name" "PGHOST" "key" "DB_HOST") | nindent 12 }}
+            {{- include "relativa.configEnv" (dict "root" . "name" "PGPORT" "key" "DB_PORT") | nindent 12 }}
+            {{- include "relativa.configEnv" (dict "root" . "name" "PGDATABASE" "key" "DB_NAME") | nindent 12 }}
+            {{- include "relativa.configEnv" (dict "root" . "name" "PGUSER" "key" "DB_USER") | nindent 12 }}
+            {{- include "relativa.secretEnv" (dict "root" . "name" "PGPASSWORD" "key" "DB_PASSWORD") | nindent 12 }}
+            - name: BACKUP_PREFIX
+              value: {{ printf "%s-r%d" .Release.Name .Release.Revision | quote }}
+            - name: BACKUP_KEEP
+              value: {{ .Values.backup.keep | quote }}
+          resources:
+            {{- toYaml .Values.backup.resources | nindent 12 }}
+          volumeMounts:
+            - name: backups
+              mountPath: /backups
+      volumes:
+        - name: backups
+          persistentVolumeClaim:
+            claimName: {{ include "relativa.componentName" $component }}
+{{- end }}

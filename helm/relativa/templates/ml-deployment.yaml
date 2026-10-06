@@ -2,4 +2,4 @@
 {{ include "relativa.databaseEnv" (dict "root" . "passwordName" "DB_PASS" "withoutConnectionString" true) }}
 {{ include "relativa.rabbitmqEnv" (dict "root" . "sections" (list)) }}
 {{- end }}
-{{ include "relativa.appDeployment" (dict "root" . "component" "ml" "waitForDependencies" true "env" (include "relativa.ml.env" .)) }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "ml" "waitForDependencies" true "waitForMigration" true "env" (include "relativa.ml.env" .)) }}

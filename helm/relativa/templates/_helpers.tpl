@@ -151,6 +151,27 @@ app.kubernetes.io/part-of: {{ include "relativa.name" .root }}
     {{- toYaml .Values.waitImage.resources | nindent 4 }}
 {{- end }}
 
+{{- define "relativa.migrationJobName" -}}
+{{- printf "%s-%d" (include "relativa.componentName" (dict "root" . "component" "migration")) .Release.Revision }}
+{{- end }}
+
+{{- define "relativa.migrationReaderName" -}}
+{{- include "relativa.componentName" (dict "root" . "component" "migration-reader") }}
+{{- end }}
+
+{{- define "relativa.waitForMigration" -}}
+- name: wait-for-migration-job
+  image: {{ include "relativa.image" .Values.migrationReaderImage }}
+  args: ["wait", "--for=create", "job/{{ include "relativa.migrationJobName" . }}", "--timeout={{ .Values.migration.waitTimeout }}"]
+  resources:
+    {{- toYaml .Values.migrationReaderImage.resources | nindent 4 }}
+- name: wait-for-migration
+  image: {{ include "relativa.image" .Values.migrationReaderImage }}
+  args: ["wait", "--for=condition=complete", "job/{{ include "relativa.migrationJobName" . }}", "--timeout={{ .Values.migration.waitTimeout }}"]
+  resources:
+    {{- toYaml .Values.migrationReaderImage.resources | nindent 4 }}
+{{- end }}
+
 {{- define "relativa.configChecksums" -}}
 checksum/config: {{ include (print .Template.BasePath "/configmap.yaml") . | sha256sum }}
 checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum }}
@@ -190,9 +211,17 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .waitForDependencies }}
+      {{- if .waitForMigration }}
+      serviceAccountName: {{ include "relativa.migrationReaderName" $root }}
+      {{- end }}
+      {{- if or .waitForDependencies .waitForMigration }}
       initContainers:
+        {{- if .waitForDependencies }}
         {{- include "relativa.waitForDependencies" $root | nindent 8 }}
+        {{- end }}
+        {{- if .waitForMigration }}
+        {{- include "relativa.waitForMigration" $root | nindent 8 }}
+        {{- end }}
       {{- end }}
       containers:
         - name: {{ .component }}

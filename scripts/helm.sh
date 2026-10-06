@@ -60,6 +60,27 @@ rendered_value() {
     inKind && inName && $1 == path ":" { print $2; exit }'
 }
 
+list_backups() {
+  local claim
+  claim="$(kn get pvc -l "app.kubernetes.io/instance=$RELEASE,app.kubernetes.io/component=backup" -o jsonpath='{.items[0].metadata.name}')"
+  [[ -n "$claim" ]] || { printf 'Backups are disabled for %s
+' "$RELEASE"; return 0; }
+  kn run "backups-$RANDOM$RANDOM" --image="$PROBE_IMAGE" --restart=Never --rm -i --quiet --overrides="$(cat <<JSON
+{
+  "spec": {
+    "containers": [{
+      "name": "backups",
+      "image": "$PROBE_IMAGE",
+      "command": ["ls", "-lh", "/backups"],
+      "volumeMounts": [{ "name": "backups", "mountPath": "/backups" }]
+    }],
+    "volumes": [{ "name": "backups", "persistentVolumeClaim": { "claimName": "$claim" } }]
+  }
+}
+JSON
+)"
+}
+
 cmd_lint() {
   require helm
   local environment args
@@ -176,9 +197,11 @@ cmd_demo() {
   helm_ns history "$RELEASE"
   kn get deployments -o custom-columns='NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,REPLICAS:.spec.replicas'
 
-  step "Hooks: migration job runs post-install and pre-upgrade"
+  step "Hooks: database backup before every upgrade and rollback"
   helm_ns get hooks "$RELEASE" | grep -E '^(kind|  name|    helm.sh/hook):' || true
-  kn get jobs
+  list_backups
+  step "Migration job per revision"
+  kn get jobs -l "app.kubernetes.io/instance=$RELEASE,app.kubernetes.io/component=migration"
 
   step "Release test"
   helm_ns test "$RELEASE" --logs
@@ -188,6 +211,7 @@ cmd_down() {
   require helm kubectl
   step "Uninstall $RELEASE"
   helm_ns uninstall "$RELEASE" --wait --timeout "$ROLLOUT_TIMEOUT"
+  kn wait --for=delete pods -l "app.kubernetes.io/instance=$RELEASE" --timeout="$ROLLOUT_TIMEOUT" 2>/dev/null || true
   step "Remaining objects in namespace $NAMESPACE"
   kn get all,ingress,pvc,configmap,secret -l "app.kubernetes.io/instance=$RELEASE" 2>&1
   kn get all,ingress,pvc 2>&1

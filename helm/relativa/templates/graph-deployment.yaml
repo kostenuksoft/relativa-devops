@@ -4,4 +4,4 @@
 {{ include "relativa.rabbitmqEnv" (dict "root" . "sections" (list "RabbitMqGraph")) }}
 {{ include "relativa.configEnv" (dict "root" . "name" "MlApi__BaseUrl" "key" "ML_URL") }}
 {{- end }}
-{{ include "relativa.appDeployment" (dict "root" . "component" "graph" "waitForDependencies" true "env" (include "relativa.graph.env" .)) }}
+{{ include "relativa.appDeployment" (dict "root" . "component" "graph" "waitForDependencies" true "waitForMigration" true "env" (include "relativa.graph.env" .)) }}
