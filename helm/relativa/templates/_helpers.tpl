@@ -266,3 +266,12 @@ spec:
       port: {{ $values.port }}
       targetPort: http
 {{- end }}
+
+{{- define "relativa.claimSize" -}}
+{{- $existing := lookup "v1" "PersistentVolumeClaim" .root.Release.Namespace .name }}
+{{- if $existing }}
+{{- $existing.spec.resources.requests.storage }}
+{{- else }}
+{{- .size }}
+{{- end }}
+{{- end }}

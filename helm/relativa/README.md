@@ -86,7 +86,7 @@ scripts/helm.sh down
 | `ingress.hosts.client`, `ingress.hosts.gateway` | `relativa.local`, `api.relativa.local` | | | хости Ingress (ключ — назва компонента) |
 | `secrets.dbPassword`, `secrets.rabbitmqPassword`, `secrets.jwtSecretKey` | локальні значення | | порожні, обов'язкові | значення Secret |
 | `postgres.persistence.enabled` | `true` | | | PVC для PostgreSQL (інакше `emptyDir`) |
-| `postgres.persistence.size` | `2Gi` | `1Gi` | `10Gi` | розмір PVC |
+| `postgres.persistence.size` | `2Gi` | `1Gi` | `10Gi` | розмір PVC під час створення; розмір наявного PVC чарт не змінює |
 | `postgres.database`, `postgres.username`, `postgres.port` | `relativa`, `relativa`, `5432` | | | параметри БД |
 | `rabbitmq.username`, `rabbitmq.port`, `rabbitmq.managementPort` | `relativa`, `5672`, `15672` | | | параметри брокера |
 | `mailhog.smtpPort`, `mailhog.httpPort` | `1025`, `8025` | | | порти MailHog |
@@ -95,6 +95,6 @@ scripts/helm.sh down
 | `migrationReaderImage` | `registry.k8s.io/kubectl:v1.37.0` | | | образ init-контейнерів, що чекають на міграції |
 | `backup.enabled` | `true` | | | хук резервного копіювання і PVC для копій |
 | `backup.keep` | `5` | | | скільки останніх копій зберігати |
-| `backup.persistence.size` | `2Gi` | | | розмір PVC для копій |
+| `backup.persistence.size` | `2Gi` | | | розмір PVC для копій під час створення |
 | `waitImage`, `tests.image` | `busybox:1.37`, `curlimages/curl:8.16.0` | | | образи init-контейнерів і тесту |
 | `imagePullSecrets` | `[]` | | | секрети для приватного registry |

@@ -13,5 +13,5 @@ spec:
   {{- end }}
   resources:
     requests:
-      storage: {{ .Values.postgres.persistence.size }}
+      storage: {{ include "relativa.claimSize" (dict "root" . "name" (include "relativa.componentName" (dict "root" . "component" "postgres")) "size" .Values.postgres.persistence.size) }}
 {{- end }}

@@ -41,7 +41,7 @@ spec:
             {{- include "relativa.configEnv" (dict "root" . "name" "PGUSER" "key" "DB_USER") | nindent 12 }}
             {{- include "relativa.secretEnv" (dict "root" . "name" "PGPASSWORD" "key" "DB_PASSWORD") | nindent 12 }}
             - name: BACKUP_PREFIX
-              value: {{ printf "%s-r%d" .Release.Name .Release.Revision | quote }}
+              value: {{ .Release.Name | quote }}
             - name: BACKUP_KEEP
               value: {{ .Values.backup.keep | quote }}
           resources:

@@ -57,7 +57,7 @@ rendered_value() {
     /^---/ { inKind = 0; inName = 0 }
     $0 == "kind: " kind { inKind = 1 }
     inKind && $0 == "  name: " name { inName = 1 }
-    inKind && inName && $1 == path ":" { print $2; exit }'
+    !found && inKind && inName && $1 == path ":" { print $2; found = 1 }'
 }
 
 list_backups() {
@@ -144,12 +144,10 @@ cmd_status() {
   helm_ns get values "$RELEASE"
   step "Release state stored by Helm"
   kn get secrets -l "owner=helm,name=$RELEASE"
-  local latest
+  local latest release
   latest="$(kn get secrets -l "owner=helm,name=$RELEASE" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1:].metadata.name}')"
-  printf '\n%s decoded (base64 -> base64 -> gzip -> JSON):\n' "$latest"
-  kn get secret "$latest" -o jsonpath='{.data.release}' | base64 -d | base64 -d | gzip -d \
-    | head -c 400
-  printf '...\n'
+  release="$(kn get secret "$latest" -o jsonpath='{.data.release}' | base64 -d | base64 -d | gzip -d)"
+  printf '\n%s decoded (base64 -> base64 -> gzip -> JSON):\n%.400s...\n' "$latest" "$release"
   step "Objects in namespace $NAMESPACE"
   kn get pods,deployments,services,ingress,pvc,jobs
   print_ingress_hosts
@@ -159,9 +157,9 @@ cmd_demo() {
   require helm kubectl
   release_exists || fail "release $RELEASE is not installed; run: $(basename "$0") up"
 
-  local secrets_dir secret_args
-  secrets_dir="$(mktemp -d)"
-  trap 'rm -rf "$secrets_dir"' EXIT
+  local secret_args
+  SECRETS_DIR="$(mktemp -d)"
+  trap 'rm -rf "$SECRETS_DIR"' EXIT
 
   step "Upgrade: image tag $SET_TAG through --set"
   helm_ns upgrade "$RELEASE" "$CHART_DIR" --reuse-values --set "image.tag=$SET_TAG" \
@@ -169,7 +167,7 @@ cmd_demo() {
   kn get deployments -o custom-columns='NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,REPLICAS:.spec.replicas'
 
   step "Upgrade: values-$UPGRADE_ENV.yaml"
-  mapfile -t secret_args < <(release_secret_args "$secrets_dir")
+  mapfile -t secret_args < <(release_secret_args "$SECRETS_DIR")
   helm_ns upgrade "$RELEASE" "$CHART_DIR" -f "$(values_file "$UPGRADE_ENV")" "${secret_args[@]}" \
     --wait --timeout "$ROLLOUT_TIMEOUT"
   kn get deployments -o custom-columns='NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,REPLICAS:.spec.replicas'
