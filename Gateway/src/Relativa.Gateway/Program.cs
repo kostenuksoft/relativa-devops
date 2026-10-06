@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 
+using Relativa.Gateway.Health;
 using Relativa.Gateway.Middleware;
 using Relativa.Gateway.OpenApi;
 
@@ -160,8 +161,7 @@ try
         options.OpenApiRoutePattern = "/openapi/aggregated.json";
     });
 
-    app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "relativa-gateway" }))
-        .AllowAnonymous();
+    app.MapGatewayHealth();
 
     app.UseAuthentication();
     app.UseAuthorization();

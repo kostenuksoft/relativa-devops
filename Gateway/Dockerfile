@@ -5,7 +5,8 @@ COPY src/Relativa.Gateway/Relativa.Gateway.csproj src/Relativa.Gateway/
 RUN dotnet restore src/Relativa.Gateway/Relativa.Gateway.csproj
 
 COPY src/Relativa.Gateway/ src/Relativa.Gateway/
-RUN dotnet publish src/Relativa.Gateway/Relativa.Gateway.csproj -c Release -o /app/publish /p:UseAppHost=false
+ARG APP_VERSION
+RUN dotnet publish src/Relativa.Gateway/Relativa.Gateway.csproj -c Release -o /app/publish /p:UseAppHost=false ${APP_VERSION:+/p:Version=$APP_VERSION}
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
