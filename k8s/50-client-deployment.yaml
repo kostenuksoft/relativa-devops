@@ -42,7 +42,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: relativa-config
-                  key: CLIENT_HOST
+                  key: CLIENT_ALLOWED_HOSTS
           resources:
             requests:
               cpu: 100m

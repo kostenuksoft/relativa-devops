@@ -18,7 +18,7 @@ data:
   JWT_AUDIENCE: relativa
   SMTP_HOST: mailhog
   SMTP_PORT: "1025"
-  CLIENT_HOST: relativa.local
+  CLIENT_ALLOWED_HOSTS: client,relativa.local
   CLIENT_PUBLIC_URL: http://relativa.local
   GATEWAY_PUBLIC_URL: http://api.relativa.local
   AUTH_URL: http://auth:8081

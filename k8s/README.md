@@ -61,7 +61,7 @@ minikube tunnel
 | `JWT_AUDIENCE` | `relativa` | auth, audit, gateway |
 | `SMTP_HOST` | `mailhog` | auth |
 | `SMTP_PORT` | `1025` | auth |
-| `CLIENT_HOST` | `relativa.local` | client (`VITE_ALLOWED_HOSTS`) |
+| `CLIENT_ALLOWED_HOSTS` | `client,relativa.local` | client (`VITE_ALLOWED_HOSTS`): ім'я Service і хост ingress |
 | `CLIENT_PUBLIC_URL` | `http://relativa.local` | auth (посилання в листах), gateway (CORS) |
 | `GATEWAY_PUBLIC_URL` | `http://api.relativa.local` | client (`VITE_GATEWAY_URL`), gateway |
 | `AUTH_URL`, `CORE_URL`, `GRAPH_URL`, `ML_URL`, `AUDIT_URL` | `http://<service>:<port>` | gateway (YARP), graph (`ML_URL`) |

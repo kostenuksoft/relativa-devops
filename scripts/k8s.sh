@@ -6,10 +6,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 MANIFESTS_DIR="${MANIFESTS_DIR:-$REPO_ROOT/k8s}"
 NAMESPACE="${NAMESPACE:-relativa}"
-MINIKUBE_DRIVER="${MINIKUBE_DRIVER:-docker}"
-MINIKUBE_CPUS="${MINIKUBE_CPUS:-4}"
-MINIKUBE_MEMORY="${MINIKUBE_MEMORY:-6g}"
-ROLLOUT_TIMEOUT="${ROLLOUT_TIMEOUT:-300s}"
 DEMO_DEPLOYMENT="${DEMO_DEPLOYMENT:-gateway}"
 CONFIG_DEPLOYMENT="${CONFIG_DEPLOYMENT:-auth}"
 HEALTH_PATH="${HEALTH_PATH:-/health}"
@@ -17,28 +13,9 @@ SCALE_REPLICAS="${SCALE_REPLICAS:-4}"
 TRAFFIC_REQUESTS="${TRAFFIC_REQUESTS:-20}"
 UPDATE_TAG="${UPDATE_TAG:-1.1.0}"
 MISSING_TAG="${MISSING_TAG:-0.0.0-missing}"
-PROBE_IMAGE="${PROBE_IMAGE:-curlimages/curl:8.16.0}"
 PULL_FAILURE_TIMEOUT="${PULL_FAILURE_TIMEOUT:-180}"
 
-step() {
-  printf '\n\033[1;36m==> %s\033[0m\n' "$*"
-}
-
-fail() {
-  printf '\033[1;31m%s\033[0m\n' "$*" >&2
-  exit 1
-}
-
-require() {
-  local tool
-  for tool in "$@"; do
-    command -v "$tool" >/dev/null 2>&1 || fail "$tool is not installed or not on PATH"
-  done
-}
-
-kn() {
-  kubectl --namespace "$NAMESPACE" "$@"
-}
+source "$SCRIPT_DIR/lib/cluster.sh"
 
 selector() {
   printf 'app.kubernetes.io/name=%s' "$1"
@@ -62,20 +39,6 @@ service_url() {
   printf 'http://%s:%s%s' "$1" "$port" "$HEALTH_PATH"
 }
 
-in_cluster() {
-  kn run "probe-$RANDOM$RANDOM" --image="$PROBE_IMAGE" --restart=Never --rm -i --quiet --command -- sh -c "$1"
-}
-
-wait_for_rollouts() {
-  local deployment
-  for deployment in $(kn get deployments -o jsonpath='{.items[*].metadata.name}'); do
-    kn rollout status "deployment/$deployment" --timeout="$ROLLOUT_TIMEOUT"
-  done
-  if [[ -n "$(kn get jobs -o name)" ]]; then
-    kn wait --for=condition=complete jobs --all --timeout="$ROLLOUT_TIMEOUT"
-  fi
-}
-
 record_change() {
   kn annotate deployment "$1" "kubernetes.io/change-cause=$2" --overwrite >/dev/null
 }
@@ -89,31 +52,19 @@ set_tag() {
 
 health_of() {
   in_cluster "curl -fsS $(service_url "$1")"
-  printf '\n'
-}
-
-ingress_address() {
-  case "$(uname -s)" in
-    Linux) minikube ip ;;
-    *) printf '127.0.0.1' ;;
-  esac
+  printf '
+'
 }
 
 cmd_up() {
-  require minikube kubectl
-
-  step "Cluster"
-  if ! minikube status >/dev/null 2>&1; then
-    minikube start --driver="$MINIKUBE_DRIVER" --cpus="$MINIKUBE_CPUS" --memory="$MINIKUBE_MEMORY"
-  fi
-  minikube addons enable metrics-server
-  minikube addons enable ingress
-  kubectl get nodes -o wide
-  kubectl --namespace kube-system get pods
+  ensure_cluster
 
   step "Apply $MANIFESTS_DIR"
   kubectl apply -f "$MANIFESTS_DIR"
   wait_for_rollouts
+  if [[ -n "$(kn get jobs -o name)" ]]; then
+    kn wait --for=condition=complete jobs --all --timeout="$ROLLOUT_TIMEOUT"
+  fi
 
   step "Objects in namespace $NAMESPACE"
   kn get pods,deployments,replicasets,services,ingress,pvc,jobs -o wide
@@ -121,15 +72,8 @@ cmd_up() {
   step "In-cluster request to $DEMO_DEPLOYMENT"
   health_of "$DEMO_DEPLOYMENT"
 
-  step "Browser access"
-  printf 'Run "minikube tunnel" in a separate terminal and add to the hosts file:\n'
-  local address host
-  address="$(ingress_address)"
-  for host in $(kn get ingress -o jsonpath='{.items[*].spec.rules[*].host}'); do
-    printf '  %s %s\n' "$address" "$host"
-  done
+  print_ingress_hosts
 }
-
 
 cmd_config() {
   local env_names secret_names
@@ -257,24 +201,6 @@ cmd_demo() {
   health_of "$deployment"
 }
 
-cmd_ui() {
-  local headlamp="${HEADLAMP_BIN:-}"
-  if [[ -z "$headlamp" ]]; then
-    if command -v headlamp >/dev/null 2>&1; then
-      headlamp="$(command -v headlamp)"
-    elif [[ -n "${LOCALAPPDATA:-}" && -x "$LOCALAPPDATA/Programs/Headlamp/Headlamp.exe" ]]; then
-      headlamp="$LOCALAPPDATA/Programs/Headlamp/Headlamp.exe"
-    elif [[ -d /Applications/Headlamp.app ]]; then
-      open -a Headlamp
-      return
-    else
-      fail "Headlamp not found; install it from https://headlamp.dev or set HEADLAMP_BIN"
-    fi
-  fi
-  "$headlamp" >/dev/null 2>&1 &
-  disown
-}
-
 cmd_down() {
   require kubectl
   kubectl delete -f "$MANIFESTS_DIR" --ignore-not-found
@@ -288,7 +214,7 @@ case "${1:-}" in
   up) cmd_up ;;
   config) cmd_config ;;
   demo) cmd_demo ;;
-  ui) cmd_ui ;;
+  ui) open_headlamp ;;
   down) cmd_down ;;
   *) usage; exit 1 ;;
 esac
