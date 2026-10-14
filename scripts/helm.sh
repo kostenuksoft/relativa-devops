@@ -1,222 +1,89 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-CHART_DIR="${CHART_DIR:-$REPO_ROOT/helm/relativa}"
-MANIFESTS_DIR="${MANIFESTS_DIR:-$REPO_ROOT/k8s}"
-NAMESPACE="${NAMESPACE:-relativa}"
-RELEASE="${RELEASE:-relativa}"
-INSTALL_ENV="${INSTALL_ENV:-dev}"
-UPGRADE_ENV="${UPGRADE_ENV:-prod}"
-SET_TAG="${SET_TAG:-1.0.0}"
-PRECEDENCE_KEY="${PRECEDENCE_KEY:-gateway.replicaCount}"
-PRECEDENCE_VALUE="${PRECEDENCE_VALUE:-3}"
+RELEASE=relativa
+NAMESPACE=relativa
+CHART=helm/relativa
+RENDERED="$(mktemp -d)"
+trap 'rm -rf "$RENDERED"' EXIT
 
-source "$SCRIPT_DIR/lib/cluster.sh"
+PS4=$'\n\033[1;36m$\033[0m '
+set -x
 
-values_file() {
-  printf '%s/values-%s.yaml' "$CHART_DIR" "$1"
-}
+helm version
 
-helm_ns() {
-  helm --namespace "$NAMESPACE" "$@"
-}
+minikube start --driver=docker --cpus=4 --memory=8g
+minikube addons enable ingress
+minikube addons enable metrics-server
+kubectl get nodes
 
-release_exists() {
-  helm_ns status "$RELEASE" >/dev/null 2>&1
-}
+kubectl delete -f k8s/ --ignore-not-found --wait
 
-release_secret_name() {
-  kn get secret -l "app.kubernetes.io/instance=$RELEASE,app.kubernetes.io/managed-by=Helm" -o jsonpath='{.items[0].metadata.name}'
-}
+helm lint "$CHART"
+helm lint "$CHART" -f "$CHART/values-prod.yaml" \
+  --set secrets.dbPassword=x,secrets.rabbitmqPassword=x,secrets.jwtSecretKey=x
 
-release_secret_args() {
-  local directory="$1" secret key value
-  secret="$(release_secret_name)"
-  for key in dbPassword:DB_PASSWORD rabbitmqPassword:RABBITMQ_PASSWORD jwtSecretKey:JWT_SECRET_KEY; do
-    value="${key#*:}"
-    kn get secret "$secret" -o jsonpath="{.data.$value}" | base64 -d > "$directory/$value"
-    printf -- '--set-file\nsecrets.%s=%s\n' "${key%%:*}" "$directory/$value"
-  done
-}
+helm template "$RELEASE" "$CHART" -f "$CHART/values-dev.yaml" > "$RENDERED/dev.yaml"
+helm template "$RELEASE" "$CHART" -f "$CHART/values-prod.yaml" \
+  --set secrets.dbPassword=x,secrets.rabbitmqPassword=x,secrets.jwtSecretKey=x > "$RENDERED/prod.yaml"
+diff "$RENDERED/dev.yaml" "$RENDERED/prod.yaml" || true
 
-render() {
-  helm template "$RELEASE" "$CHART_DIR" --namespace "$NAMESPACE" "$@"
-}
+helm template "$RELEASE" "$CHART" -s templates/gateway-deployment.yaml | grep replicas
+helm template "$RELEASE" "$CHART" -f "$CHART/values-prod.yaml" \
+  --set secrets.dbPassword=x,secrets.rabbitmqPassword=x,secrets.jwtSecretKey=x \
+  -s templates/gateway-deployment.yaml | grep replicas
+helm template "$RELEASE" "$CHART" -f "$CHART/values-prod.yaml" \
+  --set secrets.dbPassword=x,secrets.rabbitmqPassword=x,secrets.jwtSecretKey=x \
+  --set gateway.replicaCount=3 \
+  -s templates/gateway-deployment.yaml | grep replicas
 
-placeholder_secrets() {
-  printf -- '--set\nsecrets.dbPassword=render,secrets.rabbitmqPassword=render,secrets.jwtSecretKey=render\n'
-}
+grep -h '^kind:' k8s/*.yaml | sort | uniq -c
+grep -h '^kind:' "$RENDERED/prod.yaml" | sort | uniq -c
 
-rendered_value() {
-  local kind="$1" name="$2" path="$3"
-  shift 3
-  render "$@" | awk -v kind="$kind" -v name="$name" -v path="$path" '
-    /^---/ { inKind = 0; inName = 0 }
-    $0 == "kind: " kind { inKind = 1 }
-    inKind && $0 == "  name: " name { inName = 1 }
-    !found && inKind && inName && $1 == path ":" { print $2; found = 1 }'
-}
+helm install "$RELEASE" "$CHART" -n "$NAMESPACE" --create-namespace \
+  -f "$CHART/values-dev.yaml" --wait --timeout 10m
 
-list_backups() {
-  local claim
-  claim="$(kn get pvc -l "app.kubernetes.io/instance=$RELEASE,app.kubernetes.io/component=backup" -o jsonpath='{.items[0].metadata.name}')"
-  if [[ -z "$claim" ]]; then
-    printf 'Backups are disabled for %s
-' "$RELEASE"
-    return 0
-  fi
-  in_cluster "ls -lh /backups" "$(printf '{"spec":{"containers":[{"name":"probe","image":"%s","command":["sh","-c","ls -lh /backups"],"volumeMounts":[{"name":"backups","mountPath":"/backups"}]}],"volumes":[{"name":"backups","persistentVolumeClaim":{"claimName":"%s"}}]}}' "$PROBE_IMAGE" "$claim")"
-}
+helm list -n "$NAMESPACE"
+helm status "$RELEASE" -n "$NAMESPACE"
+helm get values "$RELEASE" -n "$NAMESPACE"
+kubectl -n "$NAMESPACE" get pods
+kubectl -n "$NAMESPACE" get secrets -l owner=helm
 
-cmd_lint() {
-  require helm
-  local environment args
-  step "Lint $CHART_DIR"
-  mapfile -t args < <(placeholder_secrets)
-  helm lint "$CHART_DIR" --strict
-  for environment in dev prod; do
-    helm lint "$CHART_DIR" --strict -f "$(values_file "$environment")" "${args[@]}"
-  done
-}
+helm upgrade "$RELEASE" "$CHART" -n "$NAMESPACE" --reuse-values \
+  --set image.tag=1.0.0 --wait --timeout 10m
+kubectl -n "$NAMESPACE" get deployments -o wide
 
-cmd_envs() {
-  require helm
-  local args gateway
-  mapfile -t args < <(placeholder_secrets)
-  gateway="$RELEASE-gateway"
-  [[ "$RELEASE" == *relativa* ]] || gateway="$RELEASE-relativa-gateway"
+kubectl -n "$NAMESPACE" get secret "$RELEASE-secrets" -o jsonpath='{.data.DB_PASSWORD}' | base64 -d > "$RENDERED/db-password"
+kubectl -n "$NAMESPACE" get secret "$RELEASE-secrets" -o jsonpath='{.data.RABBITMQ_PASSWORD}' | base64 -d > "$RENDERED/rabbitmq-password"
+kubectl -n "$NAMESPACE" get secret "$RELEASE-secrets" -o jsonpath='{.data.JWT_SECRET_KEY}' | base64 -d > "$RENDERED/jwt-secret-key"
+helm upgrade "$RELEASE" "$CHART" -n "$NAMESPACE" -f "$CHART/values-prod.yaml" \
+  --set-file secrets.dbPassword="$RENDERED/db-password" \
+  --set-file secrets.rabbitmqPassword="$RENDERED/rabbitmq-password" \
+  --set-file secrets.jwtSecretKey="$RENDERED/jwt-secret-key" \
+  --wait --timeout 10m
+kubectl -n "$NAMESPACE" get deployments,ingress
 
-  step "Difference between dev and prod manifests"
-  diff -u \
-    --label "values-dev.yaml" <(render -f "$(values_file dev)" "${args[@]}") \
-    --label "values-prod.yaml" <(render -f "$(values_file prod)" "${args[@]}") || true
+helm history "$RELEASE" -n "$NAMESPACE"
+helm get values "$RELEASE" -n "$NAMESPACE" --revision 1
+helm get values "$RELEASE" -n "$NAMESPACE" --revision 3
 
-  step "Value precedence for $PRECEDENCE_KEY"
-  printf '  %-45s %s\n' "values.yaml" \
-    "$(rendered_value Deployment "$gateway" replicas "${args[@]}")"
-  printf '  %-45s %s\n' "values.yaml + -f values-prod.yaml" \
-    "$(rendered_value Deployment "$gateway" replicas -f "$(values_file prod)" "${args[@]}")"
-  printf '  %-45s %s\n' "values.yaml + -f values-prod.yaml + --set" \
-    "$(rendered_value Deployment "$gateway" replicas -f "$(values_file prod)" "${args[@]}" --set "$PRECEDENCE_KEY=$PRECEDENCE_VALUE")"
-}
+helm rollback "$RELEASE" 1 -n "$NAMESPACE" --wait --timeout 10m
+helm history "$RELEASE" -n "$NAMESPACE"
+kubectl -n "$NAMESPACE" get deployments -o wide
 
-cmd_compare() {
-  require helm
-  local args
-  mapfile -t args < <(placeholder_secrets)
-  step "Objects per kind: $MANIFESTS_DIR vs chart ($UPGRADE_ENV values)"
-  diff -y --width=70 \
-    <(cat "$MANIFESTS_DIR"/*.yaml | awk '/^kind:/ { print $2 }' | sort | uniq -c) \
-    <(render -f "$(values_file "$UPGRADE_ENV")" "${args[@]}" | awk '/^kind:/ { print $2 }' | sort | uniq -c) || true
-}
+helm get hooks "$RELEASE" -n "$NAMESPACE"
+kubectl -n "$NAMESPACE" get events --field-selector involvedObject.kind=Job
+kubectl -n "$NAMESPACE" get jobs,pvc
 
-cmd_up() {
-  require helm
-  ensure_cluster
-  cmd_lint
+helm test "$RELEASE" -n "$NAMESPACE" --logs
 
-  if kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 && ! release_exists; then
-    step "Remove plain-manifest deployment from $MANIFESTS_DIR"
-    kubectl delete -f "$MANIFESTS_DIR" --ignore-not-found --wait
-    kubectl wait --for=delete "namespace/$NAMESPACE" --timeout="$ROLLOUT_TIMEOUT" 2>/dev/null || true
-  fi
+{ set +x; } 2>/dev/null
+read -r -p $'\nUninstall release '"$RELEASE"$'? [y/N] ' answer || answer=""
+[[ "$answer" == [yY] ]] || exit 0
+set -x
 
-  if release_exists; then
-    step "Release $RELEASE already installed"
-  else
-    step "Install $RELEASE with values-$INSTALL_ENV.yaml"
-    helm_ns install "$RELEASE" "$CHART_DIR" --create-namespace \
-      -f "$(values_file "$INSTALL_ENV")" --wait --timeout "$ROLLOUT_TIMEOUT"
-  fi
-  cmd_status
-}
-
-cmd_status() {
-  require helm kubectl
-  step "Releases"
-  helm_ns list
-  step "Status"
-  helm_ns status "$RELEASE"
-  step "Values supplied to $RELEASE"
-  helm_ns get values "$RELEASE"
-  step "Release state stored by Helm"
-  kn get secrets -l "owner=helm,name=$RELEASE"
-  local latest release
-  latest="$(kn get secrets -l "owner=helm,name=$RELEASE" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1:].metadata.name}')"
-  release="$(kn get secret "$latest" -o jsonpath='{.data.release}' | base64 -d | base64 -d | gzip -d)"
-  printf '\n%s decoded (base64 -> base64 -> gzip -> JSON):\n%.400s...\n' "$latest" "$release"
-  step "Objects in namespace $NAMESPACE"
-  kn get pods,deployments,services,ingress,pvc,jobs
-  print_ingress_hosts
-}
-
-cmd_demo() {
-  require helm kubectl
-  release_exists || fail "release $RELEASE is not installed; run: $(basename "$0") up"
-
-  local secret_args
-  SECRETS_DIR="$(mktemp -d)"
-  trap 'rm -rf "$SECRETS_DIR"' EXIT
-
-  step "Upgrade: image tag $SET_TAG through --set"
-  helm_ns upgrade "$RELEASE" "$CHART_DIR" --reuse-values --set "image.tag=$SET_TAG" \
-    --wait --timeout "$ROLLOUT_TIMEOUT"
-  kn get deployments -o custom-columns='NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,REPLICAS:.spec.replicas'
-
-  step "Upgrade: values-$UPGRADE_ENV.yaml"
-  mapfile -t secret_args < <(release_secret_args "$SECRETS_DIR")
-  helm_ns upgrade "$RELEASE" "$CHART_DIR" -f "$(values_file "$UPGRADE_ENV")" "${secret_args[@]}" \
-    --wait --timeout "$ROLLOUT_TIMEOUT"
-  kn get deployments -o custom-columns='NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,REPLICAS:.spec.replicas'
-  kn get ingress
-
-  step "Revision history"
-  helm_ns history "$RELEASE"
-  step "Changes between revision 1 and the current revision"
-  diff -u --label "revision 1" <(helm_ns get values "$RELEASE" --revision 1 -a) \
-    --label "current" <(helm_ns get values "$RELEASE" -a) \
-    | grep -v -E 'Password|SecretKey' || true
-
-  step "Rollback to revision 1"
-  helm_ns rollback "$RELEASE" 1 --wait --timeout "$ROLLOUT_TIMEOUT"
-  helm_ns history "$RELEASE"
-  kn get deployments -o custom-columns='NAME:.metadata.name,IMAGE:.spec.template.spec.containers[0].image,REPLICAS:.spec.replicas'
-
-  step "Hooks: database backup before every upgrade and rollback"
-  helm_ns get hooks "$RELEASE" | grep -E '^(kind|  name|    helm.sh/hook):' || true
-  list_backups
-  step "Migration job per revision"
-  kn get jobs -l "app.kubernetes.io/instance=$RELEASE,app.kubernetes.io/component=migration"
-
-  step "Release test"
-  helm_ns test "$RELEASE" --logs
-}
-
-cmd_down() {
-  require helm kubectl
-  step "Uninstall $RELEASE"
-  helm_ns uninstall "$RELEASE" --wait --timeout "$ROLLOUT_TIMEOUT"
-  kn wait --for=delete pods -l "app.kubernetes.io/instance=$RELEASE" --timeout="$ROLLOUT_TIMEOUT" 2>/dev/null || true
-  step "Remaining objects in namespace $NAMESPACE"
-  kn get all,ingress,pvc,configmap,secret -l "app.kubernetes.io/instance=$RELEASE" 2>&1
-  kn get all,ingress,pvc 2>&1
-}
-
-usage() {
-  printf 'Usage: %s <up|lint|envs|compare|status|demo|ui|down>\n' "$(basename "$0")"
-}
-
-case "${1:-}" in
-  up) cmd_up ;;
-  lint) cmd_lint ;;
-  envs) cmd_envs ;;
-  compare) cmd_compare ;;
-  status) cmd_status ;;
-  demo) cmd_demo ;;
-  ui) open_headlamp ;;
-  down) cmd_down ;;
-  *) usage; exit 1 ;;
-esac
+helm uninstall "$RELEASE" -n "$NAMESPACE" --wait
+kubectl -n "$NAMESPACE" wait --for=delete pods --all --timeout=5m
+kubectl -n "$NAMESPACE" get all,pvc,ingress
