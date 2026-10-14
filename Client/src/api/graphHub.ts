@@ -1,9 +1,9 @@
 import * as signalR from '@microsoft/signalr';
 import { useAuthStore } from '@/stores/auth';
+import { GATEWAY_URL } from '@/config/runtime';
 
 function hubUrl(): string {
-  const base = (import.meta.env.VITE_GATEWAY_URL ?? 'http://localhost:8080').replace(/\/$/, '');
-  return `${base}/graph/hubs/graph`;
+  return `${GATEWAY_URL}/graph/hubs/graph`;
 }
 
 export function buildGraphHubConnection(): signalR.HubConnection {

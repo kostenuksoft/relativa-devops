@@ -7,3 +7,11 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface RelativaRuntimeConfig {
+  readonly gatewayUrl?: string;
+}
+
+interface Window {
+  readonly __RELATIVA_CONFIG__?: RelativaRuntimeConfig;
+}

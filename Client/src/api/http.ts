@@ -1,15 +1,9 @@
 import { useAuthStore } from '@/stores/auth';
 import { useWorkspaceStore } from '@/stores/workspace';
 import { HttpStatus } from '@/api/httpStatus';
+import { GATEWAY_URL } from '@/config/runtime';
 
 export { HttpStatus };
-
-function gatewayBase(): string {
-  return (import.meta.env.VITE_GATEWAY_URL ?? 'http://localhost:8080').replace(
-    /\/$/,
-    '',
-  );
-}
 
 export class ApiError extends Error {
   constructor(
@@ -44,7 +38,7 @@ export async function gatewayFetch(
   if (wsStore.currentWorkspaceId) {
     headers.set('X-Workspace-ID', String(wsStore.currentWorkspaceId));
   }
-  const url = path.startsWith('http') ? path : `${gatewayBase()}${path}`;
+  const url = path.startsWith('http') ? path : `${GATEWAY_URL}${path}`;
   const controller = new AbortController();
   const timerId = setTimeout(() => controller.abort(), 30_000);
   return fetch(url, { ...init, headers, signal: controller.signal }).finally(() =>

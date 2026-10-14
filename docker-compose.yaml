@@ -276,6 +276,7 @@ services:
     build:
       context: ./Client
       dockerfile: Dockerfile
+      target: dev
     container_name: relativa-client
     environment:
       VITE_GATEWAY_URL: ${VITE_GATEWAY_URL}
