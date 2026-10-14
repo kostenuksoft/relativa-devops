@@ -29,6 +29,11 @@ spec:
               containerPort: {{ .Values.mailhog.httpPort }}
           resources:
             {{- toYaml .Values.mailhog.resources | nindent 12 }}
+          startupProbe:
+            tcpSocket:
+              port: smtp
+            periodSeconds: 2
+            failureThreshold: 30
           readinessProbe:
             tcpSocket:
               port: smtp
@@ -36,5 +41,4 @@ spec:
           livenessProbe:
             tcpSocket:
               port: smtp
-            initialDelaySeconds: 10
             periodSeconds: 20

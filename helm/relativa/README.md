@@ -76,7 +76,8 @@ scripts/helm.sh down
 | `<component>.healthPath` | `/health`, graph і client — `/`, ml — `/api/ml/health/` | | | шлях readiness-проби і `helm test` |
 | `<component>.resources` | див. `values.yaml` | мінімальні | збільшені | requests / limits CPU і пам'яті |
 | `<component>.probes` | — | | | перевизначення `probes` для сервісу |
-| `probes.readiness`, `probes.liveness` | `5s/10s`, `20s/20s` | | | затримка і період проб |
+| `probes.startup` | кожні `5s`, до `36` спроб | | | startup-проба: поки вона не пройде, readiness і liveness не запускаються |
+| `probes.readiness`, `probes.liveness` | кожні `10s` / `20s`, таймаут `3s` | | | період і таймаут проб |
 | `rollingUpdate` | `maxSurge: 1`, `maxUnavailable: 0` | | | стратегія оновлення Deployment |
 | `config.aspnetcoreEnvironment` | `Development` | `Development` | `Production` | `ASPNETCORE_ENVIRONMENT` .NET-сервісів |
 | `config.jwt.issuer`, `config.jwt.audience` | `relativa-auth`, `relativa` | | | параметри JWT |

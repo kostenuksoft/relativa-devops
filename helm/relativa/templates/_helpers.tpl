@@ -248,6 +248,10 @@ spec:
             preStop:
               sleep:
                 seconds: {{ $root.Values.shutdownDelaySeconds }}
+          startupProbe:
+            tcpSocket:
+              port: http
+            {{- toYaml $probes.startup | nindent 12 }}
           readinessProbe:
             httpGet:
               path: {{ $values.healthPath }}
