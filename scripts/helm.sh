@@ -53,7 +53,7 @@ kubectl -n "$NAMESPACE" get pods
 kubectl -n "$NAMESPACE" get secrets -l owner=helm
 
 helm upgrade "$RELEASE" "$CHART" -n "$NAMESPACE" --reuse-values \
-  --set image.tag=1.0.0 --wait --timeout 10m
+  --set image.tag=1.2.0 --wait --timeout 10m
 kubectl -n "$NAMESPACE" get deployments -o wide
 
 kubectl -n "$NAMESPACE" get secret "$RELEASE-secrets" -o jsonpath='{.data.DB_PASSWORD}' | base64 -d > "$RENDERED/db-password"

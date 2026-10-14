@@ -7,5 +7,4 @@ metadata:
 rules:
   - apiGroups: ["batch"]
     resources: ["jobs"]
-    resourceNames: [{{ include "relativa.migrationJobName" . | quote }}]
     verbs: ["get", "list", "watch"]

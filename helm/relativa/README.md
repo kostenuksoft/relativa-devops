@@ -58,7 +58,7 @@ scripts/helm.sh down
 
 ## Міграції, хук і тест
 
-- `templates/migration-job.yaml` — Job міграцій з номером ревізії в імені (`<fullname>-migration-<revision>`). Кожне встановлення, оновлення і відкат створюють новий Job, попередній видаляється разом зі старою ревізією, а `helm uninstall` прибирає його разом з релізом. Сервіси з БД чекають на завершення саме цього Job через init-контейнери `kubectl wait`; Role дозволяє читати лише його.
+- `templates/migration-job.yaml` — Job міграцій з номером ревізії в імені (`<fullname>-migration-<revision>`). Кожне встановлення, оновлення і відкат створюють новий Job, попередній видаляється разом зі старою ревізією, а `helm uninstall` прибирає його разом з релізом. Сервіси з БД чекають на завершення саме цього Job через init-контейнери `kubectl wait`; Role дозволяє лише читати Job у namespace релізу.
 - `templates/backup-job.yaml` — хук `pre-upgrade,pre-rollback`: перед кожним оновленням і відкатом робить `pg_dump` у PVC `<fullname>-backup` і залишає `backup.keep` останніх копій. Якщо резервна копія не вдалася, оновлення не виконується. Після успіху Job видаляється (`hook-succeeded`).
 - `templates/tests/test-connection.yaml` — под з `helm.sh/hook: test`, який перевіряє health-ендпоінти всіх сервісів через їхні Service; запуск — `helm test relativa --namespace relativa --logs`. Після успішного тесту под видаляється.
 
