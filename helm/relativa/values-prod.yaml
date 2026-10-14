@@ -1,5 +1,5 @@
 image:
-  tag: 1.0.0
+  tag: 1.2.0
   pullPolicy: Always
 
 config:
@@ -95,8 +95,8 @@ client:
   replicaCount: 2
   resources:
     requests:
-      cpu: 200m
-      memory: 384Mi
+      cpu: 50m
+      memory: 64Mi
     limits:
-      cpu: "1"
-      memory: 1Gi
+      cpu: 500m
+      memory: 256Mi

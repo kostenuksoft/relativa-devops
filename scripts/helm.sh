@@ -6,8 +6,9 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 RELEASE=relativa
 NAMESPACE=relativa
 CHART=helm/relativa
+INGRESS_PORT=8088
 RENDERED="$(mktemp -d)"
-trap 'rm -rf "$RENDERED"' EXIT
+trap 'rm -rf "$RENDERED"; kill $(jobs -p) 2>/dev/null' EXIT
 
 PS4=$'\n\033[1;36m$\033[0m '
 set -x
@@ -62,8 +63,14 @@ helm upgrade "$RELEASE" "$CHART" -n "$NAMESPACE" -f "$CHART/values-prod.yaml" \
   --set-file secrets.dbPassword="$RENDERED/db-password" \
   --set-file secrets.rabbitmqPassword="$RENDERED/rabbitmq-password" \
   --set-file secrets.jwtSecretKey="$RENDERED/jwt-secret-key" \
+  --set ingress.port="$INGRESS_PORT" \
   --wait --timeout 10m
 kubectl -n "$NAMESPACE" get deployments,ingress
+
+kubectl -n ingress-nginx port-forward service/ingress-nginx-controller "$INGRESS_PORT":80 >/dev/null &
+{ set +x; } 2>/dev/null
+read -r -p $'\nOpen http://relativa.local:'"$INGRESS_PORT"' and http://api.relativa.local:'"$INGRESS_PORT"$'/scalar, then press Enter to continue ' || true
+set -x
 
 helm history "$RELEASE" -n "$NAMESPACE"
 helm get values "$RELEASE" -n "$NAMESPACE" --revision 1

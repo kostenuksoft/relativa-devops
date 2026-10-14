@@ -8,7 +8,7 @@
 | Поле | Значення | Що означає |
 |------|----------|------------|
 | `version` | `0.1.0` | версія самого чарта: змінюється, коли змінюються шаблони, `values.yaml` або структура чарта |
-| `appVersion` | `1.1.0` | версія застосунку Relativa, тобто тег образів `ghcr.io/kostenuksoft/relativa-*` за замовчуванням |
+| `appVersion` | `1.3.0` | версія застосунку Relativa, тобто тег образів `ghcr.io/kostenuksoft/relativa-*` за замовчуванням |
 
 Тег образу береться з `image.tag`, якщо його задано, інакше з `appVersion`. Оновлення застосунку без змін у шаблонах змінює лише `appVersion`; зміна шаблонів без нового релізу застосунку — лише `version`.
 
@@ -67,7 +67,7 @@ scripts/helm.sh down
 | Ключ | За замовчуванням | dev | prod | Опис |
 |------|------------------|-----|------|------|
 | `image.repository` | `ghcr.io/kostenuksoft/relativa` | | | префікс образів, до нього додається `-<component>` |
-| `image.tag` | `""` (= `appVersion`) | `1.1.0` | `1.0.0` | тег образів застосунку |
+| `image.tag` | `""` (= `appVersion`) | `1.3.0` | `1.2.0` | тег образів застосунку |
 | `image.pullPolicy` | `IfNotPresent` | `IfNotPresent` | `Always` | політика завантаження образів |
 | `<component>.image.repository`, `<component>.image.tag` | — | | | перевизначення образу окремого сервісу |
 | `<component>.replicaCount` | `1` | `1` | `2` для auth, audit, ml, gateway, client | кількість реплік |
@@ -83,6 +83,7 @@ scripts/helm.sh down
 | `publicUrls.client`, `publicUrls.gateway` | `http://localhost:3000`, `http://localhost:8080` | | | адреси для браузера без Ingress (port-forward) |
 | `ingress.enabled` | `false` | `false` | `true` | створення Ingress; адреси для браузера беруться з `ingress.hosts` |
 | `ingress.className`, `ingress.scheme`, `ingress.annotations` | `nginx`, `http`, таймаути для SignalR | | | налаштування Ingress |
+| `ingress.port` | `80` | | | порт, на якому браузер відкриває Ingress; входить у публічні адреси клієнта і gateway, якщо відрізняється від стандартного |
 | `ingress.hosts.client`, `ingress.hosts.gateway` | `relativa.local`, `api.relativa.local` | | | хости Ingress (ключ — назва компонента) |
 | `secrets.dbPassword`, `secrets.rabbitmqPassword`, `secrets.jwtSecretKey` | локальні значення | | порожні, обов'язкові | значення Secret |
 | `postgres.persistence.enabled` | `true` | | | PVC для PostgreSQL (інакше `emptyDir`) |

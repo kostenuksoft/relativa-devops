@@ -64,9 +64,19 @@ app.kubernetes.io/part-of: {{ include "relativa.name" .root }}
 {{- printf "http://%s:%v" (include "relativa.componentName" .) $values.port }}
 {{- end }}
 
+{{- define "relativa.ingressUrl" -}}
+{{- $ingress := .root.Values.ingress }}
+{{- $defaultPort := ternary 443 80 (eq $ingress.scheme "https") }}
+{{- if eq (int $ingress.port) $defaultPort }}
+{{- printf "%s://%s" $ingress.scheme .host }}
+{{- else }}
+{{- printf "%s://%s:%d" $ingress.scheme .host (int $ingress.port) }}
+{{- end }}
+{{- end }}
+
 {{- define "relativa.clientUrl" -}}
 {{- if .Values.ingress.enabled }}
-{{- printf "%s://%s" .Values.ingress.scheme .Values.ingress.hosts.client }}
+{{- include "relativa.ingressUrl" (dict "root" . "host" .Values.ingress.hosts.client) }}
 {{- else }}
 {{- .Values.publicUrls.client }}
 {{- end }}
@@ -74,7 +84,7 @@ app.kubernetes.io/part-of: {{ include "relativa.name" .root }}
 
 {{- define "relativa.gatewayUrl" -}}
 {{- if .Values.ingress.enabled }}
-{{- printf "%s://%s" .Values.ingress.scheme .Values.ingress.hosts.gateway }}
+{{- include "relativa.ingressUrl" (dict "root" . "host" .Values.ingress.hosts.gateway) }}
 {{- else }}
 {{- .Values.publicUrls.gateway }}
 {{- end }}

@@ -1,5 +1,5 @@
 image:
-  tag: 1.1.0
+  tag: 1.3.0
   pullPolicy: IfNotPresent
 
 config:
@@ -56,8 +56,8 @@ client:
   replicaCount: 1
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 10m
+      memory: 32Mi
     limits:
-      cpu: "1"
-      memory: 1Gi
+      cpu: 200m
+      memory: 128Mi

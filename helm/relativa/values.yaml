@@ -41,6 +41,7 @@ ingress:
   enabled: false
   className: nginx
   scheme: http
+  port: 80
   annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
@@ -255,18 +256,13 @@ client:
   port: 3000
   service:
     type: NodePort
-  probes:
-    readiness:
-      initialDelaySeconds: 10
-    liveness:
-      initialDelaySeconds: 30
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 10m
+      memory: 32Mi
     limits:
-      cpu: "1"
-      memory: 1Gi
+      cpu: 200m
+      memory: 128Mi
 
 tests:
   image:

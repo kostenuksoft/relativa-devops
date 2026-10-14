@@ -6,8 +6,9 @@ Wait until every pod is ready:
 {{- if .Values.ingress.enabled }}
 
 Open the application through the ingress:
-  1. Run "minikube tunnel" in a separate terminal.
-  2. Map the hosts to the tunnel address (127.0.0.1 on Windows / macOS, "minikube ip" on Linux):
+  1. Expose the ingress controller on port {{ .Values.ingress.port }}:
+       kubectl --namespace ingress-nginx port-forward service/ingress-nginx-controller {{ .Values.ingress.port }}:80
+  2. Map the hosts to 127.0.0.1 in the hosts file:
 {{- range .Values.ingress.hosts }}
        {{ . }}
 {{- end }}
