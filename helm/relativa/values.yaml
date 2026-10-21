@@ -14,6 +14,8 @@ rollingUpdate:
 
 shutdownDelaySeconds: 5
 
+progressDeadlineSeconds: 600
+
 probes:
   startup:
     periodSeconds: 5
@@ -36,6 +38,7 @@ publicUrls:
   gateway: http://localhost:8080
 
 secrets:
+  existingSecret: ""
   dbPassword: relativa-local-db
   rabbitmqPassword: relativa-local-mq
   jwtSecretKey: relativa-local-jwt-signing-key-min-32-chars

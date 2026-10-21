@@ -44,7 +44,7 @@ app.kubernetes.io/part-of: {{ include "relativa.name" .root }}
 {{- end }}
 
 {{- define "relativa.secretName" -}}
-{{- printf "%s-secrets" (include "relativa.fullname" .) }}
+{{- default (printf "%s-secrets" (include "relativa.fullname" .)) .Values.secrets.existingSecret }}
 {{- end }}
 
 {{- define "relativa.appImage" -}}
@@ -205,6 +205,7 @@ metadata:
     {{- include "relativa.labels" . | nindent 4 }}
 spec:
   replicas: {{ $values.replicaCount }}
+  progressDeadlineSeconds: {{ $root.Values.progressDeadlineSeconds }}
   strategy:
     {{- include "relativa.rollingUpdate" $root | nindent 4 }}
   selector:
