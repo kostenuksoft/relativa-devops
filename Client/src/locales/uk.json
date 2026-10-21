@@ -163,7 +163,8 @@
   },
   "footer": {
     "copyright": "© {year} Relativa",
-    "rights": "Усі права захищено"
+    "rights": "Усі права захищено",
+    "version": "v{version}"
   },
   "nav": {
     "home": "Головна",

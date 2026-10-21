@@ -163,7 +163,8 @@
   },
   "footer": {
     "copyright": "© {year} Relativa",
-    "rights": "All rights reserved"
+    "rights": "All rights reserved",
+    "version": "v{version}"
   },
   "nav": {
     "home": "Home",

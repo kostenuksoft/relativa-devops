@@ -2,9 +2,11 @@
 import { useI18n } from 'vue-i18n';
 import BrandMark from '@/components/layout/BrandMark.vue';
 import PreferencesBar from '@/components/layout/PreferencesBar.vue';
+import { useAppVersion } from '@/composables/useAppVersion';
 
 const { t } = useI18n();
 const year = new Date().getFullYear();
+const { version } = useAppVersion();
 </script>
 
 <template>
@@ -36,6 +38,10 @@ const year = new Date().getFullYear();
       <span>{{ t('footer.copyright', { year }) }}</span>
       <span aria-hidden="true">·</span>
       <span>{{ t('footer.rights') }}</span>
+      <template v-if="version">
+        <span aria-hidden="true">·</span>
+        <span data-testid="app-version">{{ t('footer.version', { version }) }}</span>
+      </template>
     </footer>
   </div>
 </template>
