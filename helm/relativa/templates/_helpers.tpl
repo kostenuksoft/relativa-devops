@@ -197,8 +197,14 @@ rollingUpdate:
 {{- $root := .root }}
 {{- $values := index $root.Values .component }}
 {{- $probes := mergeOverwrite (deepCopy $root.Values.probes) (default dict $values.probes) }}
+{{- $rollout := default dict $values.rollout }}
+{{- if $rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+{{- else }}
 apiVersion: apps/v1
 kind: Deployment
+{{- end }}
 metadata:
   name: {{ include "relativa.componentName" . }}
   labels:
@@ -207,7 +213,14 @@ spec:
   replicas: {{ $values.replicaCount }}
   progressDeadlineSeconds: {{ $root.Values.progressDeadlineSeconds }}
   strategy:
+    {{- if $rollout.enabled }}
+    {{- if not $rollout.strategy }}
+    {{- fail (printf "%s.rollout.strategy is required when %s.rollout.enabled is true" .component .component) }}
+    {{- end }}
+    {{- toYaml $rollout.strategy | nindent 4 }}
+    {{- else }}
     {{- include "relativa.rollingUpdate" $root | nindent 4 }}
+    {{- end }}
   selector:
     matchLabels:
       {{- include "relativa.selectorLabels" . | nindent 6 }}

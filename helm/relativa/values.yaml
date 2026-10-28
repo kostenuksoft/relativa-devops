@@ -233,6 +233,9 @@ ml:
 gateway:
   image: {}
   replicaCount: 1
+  rollout:
+    enabled: false
+    strategy: {}
   healthPath: /health
   port: 8080
   service:
