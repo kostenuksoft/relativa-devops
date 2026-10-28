@@ -19,6 +19,9 @@ COPY . .
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
+USER root
+RUN apk upgrade --no-cache
+USER nginx
 ENV VITE_GATEWAY_URL=""
 
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
