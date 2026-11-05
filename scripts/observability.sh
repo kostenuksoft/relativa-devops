@@ -26,6 +26,9 @@ GRAFANA_SERVICE_PORT="${GRAFANA_SERVICE_PORT:-80}"
 GRAFANA_PORT="${GRAFANA_PORT:-3200}"
 GRAFANA_SECRET="${GRAFANA_SECRET:-grafana-admin}"
 DASHBOARD_UID="${DASHBOARD_UID:-relativa-gateway}"
+PROMETHEUS_DATASOURCE="${PROMETHEUS_DATASOURCE:-prometheus}"
+LOKI_DATASOURCE="${LOKI_DATASOURCE:-loki}"
+EXPLORE_FROM="${EXPLORE_FROM:-now-30m}"
 PROMETHEUS_SERVICE="${PROMETHEUS_SERVICE:-kube-prometheus-stack-prometheus}"
 PROMETHEUS_PORT="${PROMETHEUS_PORT:-9090}"
 ALERTMANAGER_SERVICE="${ALERTMANAGER_SERVICE:-kube-prometheus-stack-alertmanager}"
@@ -403,12 +406,48 @@ cmd_query() {
   "$language" "$query"
 }
 
+open_url() {
+  case "$(uname -s)" in
+    Darwin) open "$1" ;;
+    Linux) xdg-open "$1" >/dev/null 2>&1 ;;
+    *) explorer.exe "$1" || true ;;
+  esac
+}
+
+explore_url() {
+  local datasource="$1" query="$2" panes
+  panes="$(jq -rn --arg ds "$datasource" --arg expr "$query" --arg from "$EXPLORE_FROM" \
+    '{a: {datasource: $ds, queries: [{refId: "A", expr: $expr, datasource: {uid: $ds}}], range: {from: $from, to: "now"}}} | tojson | @uri')"
+  printf 'http://localhost:%s/explore?schemaVersion=1&orgId=1&panes=%s' "$GRAFANA_PORT" "$panes"
+}
+
+cmd_explore() {
+  local language="${1:-}" query="${2:-}" datasource url
+  case "$language" in
+    promql) datasource="$PROMETHEUS_DATASOURCE" ;;
+    logql) datasource="$LOKI_DATASOURCE" ;;
+    *) fail "usage: explore <promql|logql> ['<query>']" ;;
+  esac
+  require kubectl jq
+  forward_monitoring
+  load_running || printf '\033[1;31mLoad generator is stopped: rates over the last minutes can be empty. Start it with: %s load start\033[0m\n' "$(basename "$0")"
+  if [[ -n "$query" ]]; then
+    "$language" "$query"
+  fi
+  url="$(explore_url "$datasource" "$query")"
+  open_url "$url"
+  printf '\nGrafana Explore (%s): %s\n' "$datasource" "$url"
+  printf 'Login: %s\n' "$(grafana_credentials)"
+  read -r -p $'\nPress Enter to close the port-forwards ' || true
+}
+
 usage() {
   printf 'Usage: %s <command>\n' "$(basename "$0")"
   printf '  stack | metrics | logs | dashboard | analysis | ui\n'
   printf '  load start [RATE] | load stop | load status\n'
   printf '  scale REPLICAS | bad-release [FAIL_RATE]\n'
   printf "  promql '<query>' | logql '<query>'\n"
+  printf "  explore promql ['<query>'] | explore logql ['<query>']\n"
 }
 
 case "${1:-}" in
@@ -422,5 +461,6 @@ case "${1:-}" in
   bad-release) cmd_bad_release "${2:-$BAD_FAIL_RATE}" ;;
   ui) cmd_ui ;;
   promql | logql) cmd_query "$1" "${2:-}" ;;
+  explore) cmd_explore "${2:-}" "${3:-}" ;;
   *) usage; exit 1 ;;
 esac
