@@ -5,20 +5,23 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 
+using Relativa.Gateway.FaultInjection;
 using Relativa.Gateway.Health;
 using Relativa.Gateway.Middleware;
+using Relativa.Gateway.Observability;
 using Relativa.Gateway.OpenApi;
 
 using Scalar.AspNetCore;
 
 using Serilog;
+using Serilog.Templates;
 
 using Yarp.ReverseProxy.Transforms;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
-    .WriteTo.Console()
+    .WriteTo.Console(new ExpressionTemplate("{ {time: @t, level: @l, message: @m, exception: @x, ..@p} }\n"))
     .WriteTo.File("logs/gateway-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
@@ -142,6 +145,7 @@ try
             });
         });
 
+    builder.Services.AddFaultInjection();
     builder.Services.AddOpenApi();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
@@ -149,8 +153,9 @@ try
     var app = builder.Build();
 
     app.UseForwardedHeaders();
+    app.UseGatewayHttpMetrics();
+    app.UseGatewayRequestLogging();
     app.UseExceptionHandler();
-    app.UseSerilogRequestLogging();
     app.UseCors();
 
     app.MapOpenApi();
@@ -162,11 +167,18 @@ try
     });
 
     app.MapGatewayHealth();
+    app.MapGatewayMetrics();
 
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.MapReverseProxy().RequireAuthorization();
+    app.MapReverseProxy(proxy =>
+    {
+        proxy.UseFaultInjection();
+        proxy.UseSessionAffinity();
+        proxy.UseLoadBalancing();
+        proxy.UsePassiveHealthChecks();
+    }).RequireAuthorization();
 
     app.Run();
 }
