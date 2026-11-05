@@ -240,7 +240,7 @@
             "uid": "${prometheus}"
           },
           "refId": "A",
-          "expr": "sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\", status=~\"5..\"}[$__rate_interval])) / sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\"}[$__rate_interval]))",
+          "expr": "1 - sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\", status!~\"5..\"}[$__rate_interval])) / sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\"}[$__rate_interval]))",
           "instant": false
         }
       ]
@@ -474,7 +474,7 @@
             "uid": "${prometheus}"
           },
           "refId": "A",
-          "expr": "sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\", status=~\"5..\"}[$__rate_interval])) / sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\"}[$__rate_interval]))",
+          "expr": "1 - sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\", status!~\"5..\"}[$__rate_interval])) / sum(rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\"}[$__rate_interval]))",
           "legendFormat": "all pods"
         },
         {
@@ -483,7 +483,7 @@
             "uid": "${prometheus}"
           },
           "refId": "B",
-          "expr": "sum by (rollouts_pod_template_hash) (rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\", status=~\"5..\"}[$__rate_interval])) / sum by (rollouts_pod_template_hash) (rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\"}[$__rate_interval]))",
+          "expr": "1 - sum by (rollouts_pod_template_hash) (rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\", status!~\"5..\"}[$__rate_interval])) / sum by (rollouts_pod_template_hash) (rate(relativa_gateway_http_requests_total{namespace=\"$namespace\", job=\"$job\"}[$__rate_interval]))",
           "legendFormat": "rs {{rollouts_pod_template_hash}}"
         }
       ]
