@@ -763,6 +763,7 @@ jobs:
           tags: relativa-${{ matrix.service }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          no-cache-filters: runtime
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
@@ -845,3 +846,4 @@ jobs:
             APP_VERSION=${{ github.ref_type == 'tag' && steps.meta.outputs.version || '' }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          no-cache-filters: runtime
