@@ -18,7 +18,7 @@ public sealed class HttpMetricsMiddleware(RequestDelegate next)
         new HistogramConfiguration
         {
             LabelNames = ["method", "route"],
-            Buckets = Histogram.ExponentialBuckets(0.005, 2, 12)
+            Buckets = Histogram.ExponentialBuckets(0.001, 2, 15)
         });
 
     public async Task InvokeAsync(HttpContext context)
