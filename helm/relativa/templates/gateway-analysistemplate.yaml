@@ -1,0 +1,28 @@
+{{- with .Values.gateway.rollout.analysis }}
+{{- if .enabled }}
+{{- $selector := printf "namespace=\"%s\", job=\"%s\", rollouts_pod_template_hash=\"{{args.canary-hash}}\"" $.Release.Namespace (include "relativa.componentName" (dict "root" $ "component" "gateway")) }}
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "relativa.componentName" (dict "root" $ "component" "gateway") }}-success-rate
+  labels:
+    {{- include "relativa.labels" (dict "root" $ "component" "gateway") | nindent 4 }}
+spec:
+  args:
+    - name: canary-hash
+  metrics:
+    - name: success-rate
+      initialDelay: {{ .initialDelay }}
+      interval: {{ .interval }}
+      count: {{ .count }}
+      failureLimit: {{ .failureLimit }}
+      successCondition: len(result) == 0 || isNaN(result[0]) || result[0] >= {{ .successRate }}
+      provider:
+        prometheus:
+          address: {{ required "gateway.rollout.analysis.prometheusAddress is required when analysis is enabled" .prometheusAddress }}
+          query: |
+            sum(rate(relativa_gateway_http_requests_total{ {{- $selector }}, status!~"5.."}[{{ .window }}]))
+              /
+            sum(rate(relativa_gateway_http_requests_total{ {{- $selector }}}[{{ .window }}]))
+{{- end }}
+{{- end }}

@@ -1,0 +1,20 @@
+{{- with .Values.monitoring.serviceMonitor }}
+{{- if .enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "relativa.componentName" (dict "root" $ "component" "gateway") }}
+  labels:
+    {{- include "relativa.labels" (dict "root" $ "component" "gateway") | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "relativa.selectorLabels" (dict "root" $ "component" "gateway") | nindent 6 }}
+  podTargetLabels:
+    {{- toYaml .podTargetLabels | nindent 4 }}
+  endpoints:
+    - port: http
+      path: {{ $.Values.gateway.metricsPath }}
+      interval: {{ .interval }}
+{{- end }}
+{{- end }}

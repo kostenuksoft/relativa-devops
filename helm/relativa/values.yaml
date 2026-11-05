@@ -55,6 +55,23 @@ ingress:
     client: relativa.local
     gateway: api.relativa.local
 
+monitoring:
+  serviceMonitor:
+    enabled: false
+    interval: 15s
+    podTargetLabels:
+      - rollouts-pod-template-hash
+  dashboard:
+    enabled: false
+    labels:
+      grafana_dashboard: "1"
+  alerts:
+    enabled: false
+    errorRatio: 0.05
+    window: 1m
+    for: 30s
+    severity: warning
+
 waitImage:
   repository: busybox
   tag: "1.37"
@@ -233,10 +250,21 @@ ml:
 gateway:
   image: {}
   replicaCount: 1
+  failRate: 0
   rollout:
     enabled: false
     strategy: {}
+    analysis:
+      enabled: false
+      prometheusAddress: ""
+      successRate: 0.95
+      window: 1m
+      initialDelay: 30s
+      interval: 20s
+      count: 6
+      failureLimit: 1
   healthPath: /health
+  metricsPath: /metrics
   port: 8080
   service:
     type: NodePort

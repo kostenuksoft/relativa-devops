@@ -6,5 +6,7 @@
 {{- range list "auth" "core" "graph" "ml" "audit" }}
 {{ include "relativa.configEnv" (dict "root" $ "name" (printf "ReverseProxy__Clusters__%s__Destinations__d1__Address" .) "key" (printf "%s_URL" (upper .))) }}
 {{- end }}
+- name: FAIL_RATE
+  value: {{ .Values.gateway.failRate | quote }}
 {{- end }}
 {{ include "relativa.appDeployment" (dict "root" . "component" "gateway" "env" (include "relativa.gateway.env" .)) }}

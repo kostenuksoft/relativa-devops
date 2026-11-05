@@ -1,0 +1,27 @@
+{{- with .Values.monitoring.alerts }}
+{{- if .enabled }}
+{{- $selector := printf "namespace=\"%s\", job=\"%s\"" $.Release.Namespace (include "relativa.componentName" (dict "root" $ "component" "gateway")) }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "relativa.componentName" (dict "root" $ "component" "gateway") }}
+  labels:
+    {{- include "relativa.labels" (dict "root" $ "component" "gateway") | nindent 4 }}
+spec:
+  groups:
+    - name: {{ include "relativa.componentName" (dict "root" $ "component" "gateway") }}
+      rules:
+        - alert: RelativaGatewayHighErrorRate
+          expr: |
+            sum(rate(relativa_gateway_http_requests_total{ {{- $selector }}, status=~"5.."}[{{ .window }}]))
+              /
+            sum(rate(relativa_gateway_http_requests_total{ {{- $selector }}}[{{ .window }}]))
+              > {{ .errorRatio }}
+          for: {{ .for }}
+          labels:
+            severity: {{ .severity }}
+          annotations:
+            summary: {{ printf "Gateway 5xx error rate is above %v%%" (mulf .errorRatio 100) | quote }}
+            description: {{ printf "{{ $value | humanizePercentage }} of gateway requests in %s failed with 5xx over the last %s." $.Release.Namespace .window | quote }}
+{{- end }}
+{{- end }}

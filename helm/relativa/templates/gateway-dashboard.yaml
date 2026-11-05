@@ -1,0 +1,14 @@
+{{- with .Values.monitoring.dashboard }}
+{{- if .enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "relativa.componentName" (dict "root" $ "component" "gateway") }}-dashboard
+  labels:
+    {{- include "relativa.labels" (dict "root" $ "component" "gateway") | nindent 4 }}
+    {{- toYaml .labels | nindent 4 }}
+data:
+  relativa-gateway.json: |-
+    {{- $.Files.Get "dashboards/relativa-gateway.json" | nindent 4 }}
+{{- end }}
+{{- end }}
