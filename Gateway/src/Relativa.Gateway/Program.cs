@@ -21,6 +21,7 @@ using Yarp.ReverseProxy.Transforms;
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Yarp", Serilog.Events.LogEventLevel.Warning)
     .WriteTo.Console(new ExpressionTemplate("{ {time: @t, level: @l, message: @m, exception: @x, ..@p} }\n"))
     .WriteTo.File("logs/gateway-.log", rollingInterval: RollingInterval.Day)
     .CreateLogger();
