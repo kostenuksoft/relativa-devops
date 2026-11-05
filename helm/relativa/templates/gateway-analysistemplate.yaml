@@ -16,7 +16,8 @@ spec:
       interval: {{ .interval }}
       count: {{ .count }}
       failureLimit: {{ .failureLimit }}
-      successCondition: len(result) == 0 || isNaN(result[0]) || result[0] >= {{ .successRate }}
+      successCondition: len(result) > 0 && result[0] >= {{ .successRate }}
+      failureCondition: len(result) > 0 && result[0] < {{ .successRate }}
       provider:
         prometheus:
           address: {{ required "gateway.rollout.analysis.prometheusAddress is required when analysis is enabled" .prometheusAddress }}
